@@ -13,7 +13,7 @@
       </div>
       <div class="metric-grid">
         <div class="metric-box">
-          <span>Brake scaling</span>
+          <span id="pedalsBrakePressureLabel">Brake scaling</span>
           <strong id="pedalsBrakePressure">-</strong>
         </div>
         <div class="metric-box">
@@ -31,6 +31,11 @@
       </div>
       <div class="inline-actions">
         <button id="pedalsRecalibrate" class="app-btn primary">Recalibrar pedais</button>
+      </div>
+      <div id="pedalsBrakePressureField" class="slider-row field-wide mt-3">
+        <label id="pedalsBrakePressureFieldLabel">Brake scaling</label>
+        <input id="pedalsBrakePressureRange" type="range" min="1" max="255" step="1">
+        <input id="pedalsBrakePressureInput" type="number" min="1" max="255" step="1">
       </div>
     </article>
 
@@ -99,7 +104,6 @@
         </div>
       </div>
       <div class="inline-actions">
-        <button id="pedalsApplyManual" class="app-btn primary">Aplicar calibracao manual</button>
         <button id="pedalsResetDraft" class="app-btn secondary">Descartar alteracoes locais</button>
       </div>
     </article>

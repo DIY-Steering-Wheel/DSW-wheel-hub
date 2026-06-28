@@ -12,9 +12,9 @@
   <div class="shell">
     <aside class="shell-sidebar">
       <nav class="nav flex-column nav-pills gap-2 sidebar-nav">
-        <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Conexao</span></button>
+        <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Lobby</span></button>
         <button class="nav-tab btn" data-tab="about"><i class="bi bi-shield-check"></i><span>About</span></button>
-        <button class="nav-tab btn is-locked" data-tab="wheel" disabled><i class="bi bi-disc"></i><span>Volante</span></button>
+        <button class="nav-tab btn is-locked" data-tab="wheel" disabled><i class="bi bi-disc"></i><span>Basico</span></button>
         <button class="nav-tab btn is-locked" data-tab="ffb" disabled><i class="bi bi-lightning-charge"></i><span>Force Feedback</span></button>
         <button class="nav-tab btn is-locked" data-tab="pedals" disabled><i class="bi bi-sliders2-vertical"></i><span>Pedais</span></button>
         <button class="nav-tab btn is-locked is-hidden" data-tab="shifter" disabled><i class="bi bi-grid-3x3-gap"></i><span>Cambio XY</span></button>
@@ -39,8 +39,7 @@
       <div class="dock-group dock-group-left">
         <select id="dockPortSelect" class="form-select form-select-sm"></select>
         <button id="dockRefreshPorts" class="btn btn-sm btn-outline-light shell-btn" title="Atualizar portas"><i class="bi bi-arrow-repeat"></i></button>
-        <button id="dockConnect" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
-        <button id="dockDisconnect" class="btn btn-sm shell-btn">Desconectar</button>
+        <button id="dockConnectToggle" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
       </div>
 
       <div class="dock-group dock-group-center">
@@ -59,65 +58,61 @@
   </div>
 
   <div class="modal fade" id="profileOptionsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content modal-glass">
         <div class="modal-header">
           <div>
             <div class="mini-label">Perfis</div>
-            <h5 class="modal-title mb-0">Opcoes de perfil</h5>
+            <h5 class="modal-title mb-0">Gerenciador de perfis</h5>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-          <div class="page-grid">
-            <article class="card shell-card">
-              <div class="card-head">
-                <div>
-                  <div class="card-kicker">Perfil ativo</div>
-                  <h3 id="profileOptionsCurrentName">Nenhum perfil selecionado</h3>
-                </div>
-              </div>
-              <div id="profileOptionsHint" class="note-panel">Selecione um perfil no rodape para editar, ou crie um novo a partir da base conectada.</div>
-            </article>
-
-            <article class="card shell-card">
-              <div class="card-head">
-                <div>
-                  <div class="card-kicker">Novo perfil</div>
-                  <h3>Criar a partir da configuracao atual</h3>
-                </div>
+          <div class="profile-manager">
+            <aside class="profile-list-panel">
+              <div class="profile-toolbar">
+                <button id="profileCreateNew" class="app-btn primary shell-icon-btn" title="Criar novo perfil"><i class="bi bi-plus-lg"></i></button>
+                <button id="profileOptionOverwrite" class="app-btn secondary" title="Salvar por cima do perfil selecionado">Sobrescrever</button>
+                <button id="profileOptionRename" class="app-btn secondary" title="Renomear perfil">Renomear</button>
+                <button id="profileOptionOpenJson" class="app-btn secondary" title="Abrir editor JSON">JSON</button>
+                <button id="profileOptionDelete" class="app-btn shell-btn-danger" title="Excluir perfil">Excluir</button>
               </div>
               <div class="field-grid">
                 <label class="field field-wide">
-                  <span>Nome do novo perfil</span>
+                  <span>Novo perfil</span>
                   <input id="profileCreateName" type="text" maxlength="64" placeholder="meu-perfil">
                 </label>
-                <div class="inline-actions">
-                  <button id="profileCreateNew" class="app-btn primary">Criar novo perfil</button>
-                </div>
               </div>
-            </article>
+              <div id="profileList" class="profile-list"></div>
+            </aside>
 
-            <article class="card shell-card">
-              <div class="card-head">
-                <div>
-                  <div class="card-kicker">Perfil selecionado</div>
-                  <h3>Renomear, sobrescrever e excluir</h3>
+            <section class="profile-detail-panel">
+              <div class="card shell-card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-kicker">Perfil selecionado</div>
+                    <h3 id="profileOptionsCurrentName">Nenhum perfil selecionado</h3>
+                  </div>
+                </div>
+                <div id="profileOptionsHint" class="note-panel">Selecione um perfil na lista ou crie um novo a partir da base conectada.</div>
+              </div>
+
+              <div class="card shell-card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-kicker">Ferramentas</div>
+                    <h3>Detalhes e nome</h3>
+                  </div>
+                </div>
+                <div class="field-grid">
+                  <label class="field field-wide">
+                    <span>Novo nome</span>
+                    <input id="profileRenameName" type="text" maxlength="64" placeholder="novo-nome">
+                  </label>
+                  <div id="profileMeta" class="note-stack"></div>
                 </div>
               </div>
-              <div class="field-grid">
-                <label class="field field-wide">
-                  <span>Novo nome</span>
-                  <input id="profileRenameName" type="text" maxlength="64" placeholder="novo-nome">
-                </label>
-                <div class="inline-actions">
-                  <button id="profileOptionOverwrite" class="app-btn primary">Salvar por cima do atual</button>
-                  <button id="profileOptionRename" class="app-btn secondary">Renomear</button>
-                  <button id="profileOptionOpenJson" class="app-btn secondary">Editor JSON</button>
-                  <button id="profileOptionDelete" class="app-btn shell-btn-danger">Excluir</button>
-                </div>
-              </div>
-            </article>
+            </section>
           </div>
         </div>
         <div class="modal-footer">
@@ -239,6 +234,9 @@
                     <div class="mini-label mb-2">Etapa 3</div>
                     <h3 class="wizard-title">Busca do firmware mais compativel</h3>
                     <div class="note-panel mb-3">Marque os recursos desejados. Se nao existir um build perfeito, o app sugere o que cobre mais funcoes e lista o que esta faltando.</div>
+                    <div class="inline-actions mb-3">
+                      <button id="firmwareFeaturesInfo" class="app-btn secondary">O que significa cada recurso?</button>
+                    </div>
                     <div id="firmwareFeatureFilters" class="filter-grid mb-3"></div>
                     <div class="field-grid two-col">
                       <label class="field">
@@ -287,6 +285,30 @@
     </div>
   </div>
 
+  <div class="modal fade" id="firmwareFeatureInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Firmware</div>
+            <h5 class="modal-title mb-0">Recursos e siglas</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="field-grid">
+            <label class="field field-wide">
+              <span>Digite um codigo ou flags</span>
+              <input id="firmwareExplainInput" type="text" placeholder="Ex.: 230x, azf, mrst">
+            </label>
+            <div id="firmwareExplainResult" class="note-panel">Digite um codigo de firmware ou uma sequencia de flags para ver a traducao.</div>
+            <div id="firmwareFeatureInfoList" class="note-stack"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal fade" id="ffbOutputModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content modal-glass">
@@ -323,27 +345,38 @@
               <input id="ffbOutputPhase" type="checkbox">
               <span>Phase correct</span>
             </label>
-            <label class="toggle-row"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Auto-center spring</span></label>
-            <label class="toggle-row"><input id="ffbDesktopDamper" type="checkbox"><span>Damper</span></label>
-            <label class="toggle-row"><input id="ffbDesktopInertia" type="checkbox"><span>Inertia</span></label>
-            <label class="toggle-row"><input id="ffbDesktopFriction" type="checkbox"><span>Friction</span></label>
-            <label class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial</span></label>
-            <label class="field field-wide">
-              <span>Eixo FFB</span>
+            <label id="ffbDesktopMonitorField" class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial</span></label>
+            <label id="ffbDesktopAxisField" class="field field-wide">
+              <span>Eixo que alimenta o xFFB</span>
               <select id="ffbDesktopAxis">
                 <option value="0">X</option>
                 <option value="1">Y</option>
                 <option value="2">Z</option>
                 <option value="3">RX</option>
                 <option value="4">RY</option>
-                <option value="5">RZ</option>
               </select>
             </label>
           </div>
         </div>
         <div class="modal-footer">
-          <button id="ffbApplyOutput" class="btn btn-outline-secondary">Aplicar saida</button>
-          <button id="ffbApplyDesktop" class="btn btn-primary">Aplicar byte E</button>
+          <div class="note-panel">Bits 5-7 do byte E escolhem qual eixo alimenta o xFFB analogico quando a firmware suporta essa troca.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="ffbGuideModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Force Feedback</div>
+            <h5 class="modal-title mb-0">Guia rapido dos ajustes</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="ffbGuideList" class="note-stack"></div>
         </div>
       </div>
     </div>

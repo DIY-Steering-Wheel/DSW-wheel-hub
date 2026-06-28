@@ -5,10 +5,12 @@
         <div class="ffb-hero">
           <div>
             <div class="card-kicker">Force Feedback</div>
-            <h3>Centro de ajuste do FFB</h3>
-            <p class="card-subtitle">Ganhos principais aqui na frente. Saida, byte E e eixo ficam na engrenagem para a tela respirar melhor.</p>
+            <h3>Ajustes finos e efeitos de desktop</h3>
           </div>
-          <button id="ffbOpenOutputModal" class="app-btn secondary shell-icon-btn" title="Abrir configuracoes de saida"><i class="bi bi-gear-fill"></i></button>
+          <div class="inline-actions compact-actions">
+            <button id="ffbOpenGuideModal" class="app-btn secondary">O que faz cada ajuste?</button>
+            <button id="ffbOpenOutputModal" class="app-btn secondary shell-icon-btn" title="Abrir configuracoes de saida"><i class="bi bi-gear-fill"></i></button>
+          </div>
         </div>
       </div>
       <div class="ffb-summary-grid">
@@ -25,8 +27,29 @@
           <strong id="ffbEffectsSummary">-</strong>
         </div>
       </div>
+      <div class="desktop-effects-grid mb-3">
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Auto-center</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Recentro artificial usado fora dos efeitos enviados pelo jogo.</small>
+          <input id="ffbCenterMirrorRange" type="range" min="0" max="200" step="1">
+        </div>
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Damper</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopDamper" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Resistencia proporcional a velocidade do movimento.</small>
+          <input id="ffbDamperMirrorRange" type="range" min="0" max="200" step="1">
+        </div>
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Inertia</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopInertia" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Simula massa e oposicao a aceleracoes bruscas.</small>
+          <input id="ffbInertiaMirrorRange" type="range" min="0" max="200" step="1">
+        </div>
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Friction</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopFriction" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Atrito seco para dar peso em pequenas mudancas.</small>
+          <input id="ffbFrictionMirrorRange" type="range" min="0" max="200" step="1">
+        </div>
+      </div>
       <div class="slider-grid slider-grid-ffb">
-        <div class="slider-card"><div class="slider-row"><label>Geral</label><input id="ffbGeneralRange" type="range" min="0" max="200" step="1"><input id="ffbGeneral" type="number" min="0" max="200"></div></div>
         <div class="slider-card"><div class="slider-row"><label>Constante</label><input id="ffbConstantRange" type="range" min="0" max="200" step="1"><input id="ffbConstant" type="number" min="0" max="200"></div></div>
         <div class="slider-card"><div class="slider-row"><label>Damper</label><input id="ffbDamperRange" type="range" min="0" max="200" step="1"><input id="ffbDamper" type="number" min="0" max="200"></div></div>
         <div class="slider-card"><div class="slider-row"><label>Friction</label><input id="ffbFrictionRange" type="range" min="0" max="200" step="1"><input id="ffbFriction" type="number" min="0" max="200"></div></div>
@@ -36,10 +59,6 @@
         <div class="slider-card"><div class="slider-row"><label>Auto-center</label><input id="ffbCenterRange" type="range" min="0" max="200" step="1"><input id="ffbCenter" type="number" min="0" max="200"></div></div>
         <div class="slider-card"><div class="slider-row"><label>End stop</label><input id="ffbStopRange" type="range" min="0" max="200" step="1"><input id="ffbStop" type="number" min="0" max="200"></div></div>
         <div class="slider-card"><div class="slider-row"><label>Min torque</label><input id="ffbMinTorqueRange" type="range" min="0" max="200" step="1"><input id="ffbMinTorque" type="number" min="0" max="200"></div></div>
-      </div>
-      <div class="inline-actions">
-        <button id="ffbApplyGains" class="app-btn primary">Aplicar ganhos FFB</button>
-        <button id="ffbResetDraft" class="app-btn secondary">Descartar alteracoes locais</button>
       </div>
     </article>
   </div>

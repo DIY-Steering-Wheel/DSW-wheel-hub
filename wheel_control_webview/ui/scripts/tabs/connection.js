@@ -2,28 +2,8 @@
   var module = {};
 
   module.bind = function (app) {
-    app.byId("connectionRefreshPorts").onclick = function () {
-      app.callApi("refresh_ports");
-    };
-
     app.byId("connectionRefreshSnapshot").onclick = function () {
       app.callApi("load_device_snapshot");
-    };
-
-    app.byId("connectionPortSelect").onchange = function () {
-      app.byId("dockPortSelect").value = this.value;
-    };
-
-    app.byId("connectionConnect").onclick = function () {
-      app.callApi("connect", [app.byId("connectionPortSelect").value]).then(function (result) {
-        if (result && result.ok) {
-          app.activateTab("wheel");
-        }
-      });
-    };
-
-    app.byId("connectionDisconnect").onclick = function () {
-      app.callApi("disconnect");
     };
 
     app.byId("connectionOpenFirmware").onclick = function () {
@@ -46,18 +26,67 @@
     }
     app.setText(
       "connectionHint",
-      snapshot.connected ? "Base conectada. As abas do app foram habilitadas conforme os recursos presentes na firmware atual." : "Conecte a base para habilitar os setores modulares do app.",
+      snapshot.connected ? "Base conectada. Este lobby resume a firmware, o hardware detectado e as ferramentas disponiveis para esta placa." : "Use o botao do rodape para conectar a base e preencher os dados desta tela.",
       ""
     );
-    app.setText(
-      "connectionPortHint",
-      snapshot.ports.length ? snapshot.ports.length + " porta(s) candidata(s) encontrada(s). A melhor opcao costuma vir marcada com * no seletor." : "Nenhuma porta candidata encontrada no momento.",
-      ""
-    );
-    app.byId("connectionConnect").disabled = !app.byId("connectionPortSelect").value || snapshot.connected;
-    app.byId("connectionDisconnect").disabled = !snapshot.connected;
+    renderDetails(snapshot, app);
+    renderTools(app);
     app.byId("connectionOpenFirmware").disabled = !(app.state.staticData && app.state.staticData.firmware_catalog && app.state.staticData.firmware_catalog.length);
   };
+
+  function renderDetails(snapshot, app) {
+    var wrap = app.byId("connectionDetails");
+    var details = [
+      "Descricao USB: " + app.text(snapshot.connection.description, "-"),
+      "Fabricante: " + app.text(snapshot.connection.manufacturer, "-"),
+      "Produto: " + app.text(snapshot.connection.product, "-"),
+      "Calibracao de pedais: " + app.text(snapshot.capabilities.pedal_calibration, "-"),
+      "Shifter XY: " + app.boolText(snapshot.capabilities.supports_xy_shifter),
+      "2 eixos FFB: " + app.boolText(snapshot.capabilities.has_two_ffb_axis),
+      "Selecao de eixo xFFB: " + app.boolText(snapshot.capabilities.supports_axis_select),
+      "Flags detectadas: " + ((snapshot.capabilities.flag_titles || []).length ? snapshot.capabilities.flag_titles.join(", ") : "-")
+    ];
+    var index;
+    app.clearChildren(wrap);
+    for (index = 0; index < details.length; index += 1) {
+      var note = document.createElement("div");
+      note.className = "note";
+      note.textContent = details[index];
+      wrap.appendChild(note);
+    }
+  }
+
+  function renderTools(app) {
+    var wrap = app.byId("connectionTools");
+    var programs = (app.state.staticData && app.state.staticData.misc_programs) || [];
+    var index;
+    app.clearChildren(wrap);
+    for (index = 0; index < programs.length; index += 1) {
+      wrap.appendChild(buildToolCard(programs[index], app));
+    }
+    if (!programs.length) {
+      var note = document.createElement("div");
+      note.className = "note-panel";
+      note.textContent = "Nenhum utilitario auxiliar encontrado na pasta local.";
+      wrap.appendChild(note);
+    }
+  }
+
+  function buildToolCard(tool, app) {
+    var card = document.createElement("button");
+    var title = document.createElement("strong");
+    var desc = document.createElement("small");
+    card.type = "button";
+    card.className = "tool-card";
+    title.textContent = tool.title;
+    desc.textContent = tool.description;
+    card.appendChild(title);
+    card.appendChild(desc);
+    card.onclick = function () {
+      app.callApi("launch_misc_program", [tool.file]);
+    };
+    return card;
+  }
 
   window.BRWheelApp.registerTab("connection", module);
 }());

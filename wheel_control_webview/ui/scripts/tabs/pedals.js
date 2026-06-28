@@ -3,22 +3,21 @@
   var pedals = ["brake", "accel", "clutch", "hbrake"];
 
   module.state = {
-    draft: null
+    draft: null,
+    timer: null,
+    brakePressureDraft: null
   };
 
   module.bind = function (app) {
     app.byId("pedalsRecalibrate").onclick = function () {
       app.callApi("run_action", ["recalibrate_pedals"]);
     };
-    app.byId("pedalsApplyManual").onclick = function () {
-      app.callApi("update_manual_calibration", [collectManual()]).then(function (result) {
-        if (result && result.ok) {
-          module.state.draft = null;
-        }
-      });
-    };
     app.byId("pedalsResetDraft").onclick = function () {
       module.state.draft = null;
+      if (module.state.timer) {
+        window.clearTimeout(module.state.timer);
+        module.state.timer = null;
+      }
       if (app.state.snapshot) {
         module.render(app.state.snapshot, app);
       }
@@ -27,6 +26,7 @@
     pedals.forEach(function (pedal) {
       bindDualRange(pedal);
     });
+    bindBrakePressure();
   };
 
   module.render = function (snapshot, app) {
@@ -34,6 +34,11 @@
     var text = "Conecte a serial para descobrir o mapa de pedal atual.";
     if (!snapshot.connected) {
       module.state.draft = null;
+      module.state.brakePressureDraft = null;
+      if (module.state.timer) {
+        window.clearTimeout(module.state.timer);
+        module.state.timer = null;
+      }
     }
     var values = module.state.draft || snapshot.manual_calibration;
 
@@ -56,10 +61,15 @@
 
     app.setText("pedalsModeTitle", title, "");
     app.setText("pedalsModeText", text, "");
+    app.setText("pedalsBrakePressureLabel", app.text(snapshot.settings.brake_pressure_label, "Brake scaling"), "Brake scaling");
+    app.setText("pedalsBrakePressureFieldLabel", app.text(snapshot.settings.brake_pressure_label, "Brake scaling"), "Brake scaling");
     app.setText("pedalsBrakePressure", app.text(snapshot.settings.brake_pressure, "-"), "-");
     app.setText("pedalsCalibration", app.text(snapshot.capabilities.pedal_calibration, "-"), "-");
     app.setText("pedalsLoadCell", app.boolText(snapshot.capabilities.has_load_cell), "-");
     app.setText("pedalsAds", app.boolText(snapshot.capabilities.has_ads1015), "-");
+    app.idleSet("pedalsBrakePressureInput", module.state.brakePressureDraft !== null ? module.state.brakePressureDraft : snapshot.settings.brake_pressure);
+    app.idleSet("pedalsBrakePressureRange", module.state.brakePressureDraft !== null ? module.state.brakePressureDraft : snapshot.settings.brake_pressure);
+    app.toggleHidden(app.byId("pedalsBrakePressureField"), !snapshot.capabilities.supports_brake_scaling);
 
     app.toggleHidden(app.byId("pedalsManualCard"), !snapshot.manual_calibration.available);
     renderDualRange("brake", values.brake_min, values.brake_max);
@@ -68,7 +78,6 @@
     renderDualRange("hbrake", values.hbrake_min, values.hbrake_max);
 
     app.byId("pedalsRecalibrate").disabled = !snapshot.connected || !snapshot.capabilities.supports_pedal_reset;
-    app.byId("pedalsApplyManual").disabled = !snapshot.connected || !snapshot.manual_calibration.available;
   };
 
   function ensureDraft() {
@@ -114,6 +123,46 @@
     module.state.draft[prefix + "_min"] = lower;
     module.state.draft[prefix + "_max"] = upper;
     renderDualRange(prefix, lower, upper);
+    queueSend();
+  }
+
+  function queueSend() {
+    if (module.state.timer) {
+      window.clearTimeout(module.state.timer);
+    }
+    module.state.timer = window.setTimeout(function () {
+      window.BRWheelApp.callApi("update_manual_calibration", [collectManual()]).then(function (result) {
+        if (result && result.ok) {
+          module.state.draft = null;
+        }
+      });
+    }, 220);
+  }
+
+  function bindBrakePressure() {
+    var numberInput = window.BRWheelApp.byId("pedalsBrakePressureInput");
+    var rangeInput = window.BRWheelApp.byId("pedalsBrakePressureRange");
+
+    function submit(value) {
+      var nextValue = Math.max(1, Math.min(255, Number(value || 0)));
+      module.state.brakePressureDraft = nextValue;
+      numberInput.value = nextValue;
+      rangeInput.value = nextValue;
+      window.BRWheelApp.callApi("update_basic_settings", [{ brake_pressure: nextValue }]).then(function (result) {
+        if (result && result.ok) {
+          module.state.brakePressureDraft = null;
+        }
+      });
+    }
+
+    numberInput.oninput = function () {
+      rangeInput.value = numberInput.value;
+      submit(numberInput.value);
+    };
+    rangeInput.oninput = function () {
+      numberInput.value = rangeInput.value;
+      submit(rangeInput.value);
+    };
   }
 
   function renderDualRange(prefix, minValue, maxValue) {

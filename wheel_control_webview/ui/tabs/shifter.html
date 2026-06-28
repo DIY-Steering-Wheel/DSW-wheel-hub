@@ -3,8 +3,8 @@
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">XY shifter</div>
-          <h3>Matriz do cambio de potenciometros</h3>
+          <div class="card-kicker">Cambio XY</div>
+          <h3>Matriz visual do cambio</h3>
         </div>
       </div>
       <div class="metric-grid">
@@ -17,41 +17,53 @@
           <strong id="shifterSlotValue">N</strong>
         </div>
       </div>
-      <div class="axis-block">
-        <div class="axis-row">
-          <span>X axis</span>
-          <div class="axis-track"><div id="shifterAxisXBar" class="axis-fill axis-fill-a"></div></div>
-        </div>
-        <div class="axis-row">
-          <span>Y axis</span>
-          <div class="axis-track"><div id="shifterAxisYBar" class="axis-fill axis-fill-b"></div></div>
+      <div class="shifter-visual-shell">
+        <div class="shifter-axis-label shifter-axis-label-y">Y</div>
+        <div id="shifterVisualGrid" class="shifter-visual-grid">
+          <div class="shifter-grid-lines"></div>
+          <div id="shifterBoundaryX0" class="shifter-boundary vertical" data-axis="x" data-index="0"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryX1" class="shifter-boundary vertical" data-axis="x" data-index="1"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryX2" class="shifter-boundary vertical" data-axis="x" data-index="2"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryY0" class="shifter-boundary horizontal" data-axis="y" data-index="0"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryY1" class="shifter-boundary horizontal" data-axis="y" data-index="1"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterLiveMarker" class="shifter-live-marker"></div>
+          <div class="shifter-slot-label slot-r1">1</div>
+          <div class="shifter-slot-label slot-r3">3</div>
+          <div class="shifter-slot-label slot-r5">5</div>
+          <div id="shifterSlotRightTop" class="shifter-slot-label slot-r7">R</div>
+          <div class="shifter-slot-label slot-r2">2</div>
+          <div class="shifter-slot-label slot-r4">4</div>
+          <div class="shifter-slot-label slot-r6">6</div>
+          <div id="shifterSlotRightBottom" class="shifter-slot-label slot-r8">R</div>
+          <div class="shifter-slot-label slot-neutral">N</div>
         </div>
       </div>
-      <div id="shifterGearMatrix" class="gear-grid"></div>
+      <div class="shifter-divider-readout">
+        <span id="shifterXCutSummary">X: 0 / 0 / 0</span>
+        <span id="shifterYCutSummary">Y: 0 / 0</span>
+      </div>
     </article>
 
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Calibration</div>
+          <div class="card-kicker">Configuracao</div>
           <h3>Faixas e comportamento</h3>
         </div>
       </div>
-      <div class="field-grid two-col">
-        <label class="field"><span>A</span><input id="shifterCalA" type="number" min="0" max="1023"></label>
-        <label class="field"><span>B</span><input id="shifterCalB" type="number" min="0" max="1023"></label>
-        <label class="field"><span>C</span><input id="shifterCalC" type="number" min="0" max="1023"></label>
-        <label class="field"><span>D</span><input id="shifterCalD" type="number" min="0" max="1023"></label>
-        <label class="field field-wide"><span>E</span><input id="shifterCalE" type="number" min="0" max="1023"></label>
-      </div>
-      <div class="field-grid two-col">
+      <div class="note-panel">Arraste as divisorias no quadro ao lado para definir os cortes de marcha. A bolinha mostra a posicao atual lida do cambio em tempo real.</div>
+      <div class="field-grid two-col mt-3">
         <label class="toggle-row"><input id="shifterCfgReverse" type="checkbox"><span>Reverse invertido</span></label>
         <label class="toggle-row"><input id="shifterCfgGear8" type="checkbox"><span>Modo 8 marchas</span></label>
         <label class="toggle-row"><input id="shifterCfgInvertX" type="checkbox"><span>Inverter eixo X</span></label>
         <label class="toggle-row"><input id="shifterCfgInvertY" type="checkbox"><span>Inverter eixo Y</span></label>
       </div>
-      <div class="inline-actions">
-        <button id="shifterApplyConfig" class="app-btn primary">Aplicar calibracao do cambio</button>
+      <div class="metric-grid mt-3">
+        <div class="metric-box"><span>Corte X esquerdo</span><strong id="shifterCalAValue">0</strong></div>
+        <div class="metric-box"><span>Corte X centro</span><strong id="shifterCalBValue">0</strong></div>
+        <div class="metric-box"><span>Corte X direito</span><strong id="shifterCalCValue">0</strong></div>
+        <div class="metric-box"><span>Corte Y superior</span><strong id="shifterCalDValue">0</strong></div>
+        <div class="metric-box"><span>Corte Y inferior</span><strong id="shifterCalEValue">0</strong></div>
       </div>
     </article>
   </div>

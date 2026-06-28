@@ -12,9 +12,9 @@
   <div class="shell">
     <aside class="shell-sidebar">
       <nav class="nav flex-column nav-pills gap-2 sidebar-nav">
-        <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Conexao</span></button>
+        <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Lobby</span></button>
         <button class="nav-tab btn" data-tab="about"><i class="bi bi-shield-check"></i><span>About</span></button>
-        <button class="nav-tab btn is-locked" data-tab="wheel" disabled><i class="bi bi-disc"></i><span>Volante</span></button>
+        <button class="nav-tab btn is-locked" data-tab="wheel" disabled><i class="bi bi-disc"></i><span>Basico</span></button>
         <button class="nav-tab btn is-locked" data-tab="ffb" disabled><i class="bi bi-lightning-charge"></i><span>Force Feedback</span></button>
         <button class="nav-tab btn is-locked" data-tab="pedals" disabled><i class="bi bi-sliders2-vertical"></i><span>Pedais</span></button>
         <button class="nav-tab btn is-locked is-hidden" data-tab="shifter" disabled><i class="bi bi-grid-3x3-gap"></i><span>Cambio XY</span></button>
@@ -29,31 +29,8 @@
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Conexao</div>
-          <h3>Portas, handshake e firmware</h3>
-        </div>
-      </div>
-      <div class="field-grid">
-        <label class="field field-wide">
-          <span>Porta selecionada</span>
-          <select id="connectionPortSelect"></select>
-        </label>
-        <div class="inline-actions">
-          <button id="connectionRefreshPorts" class="app-btn secondary">Atualizar portas</button>
-          <button id="connectionRefreshSnapshot" class="app-btn secondary">Recarregar snapshot</button>
-          <button id="connectionConnect" class="app-btn primary">Conectar</button>
-          <button id="connectionDisconnect" class="app-btn secondary">Desconectar</button>
-          <button id="connectionOpenFirmware" class="app-btn primary">Gravar firmware</button>
-        </div>
-        <div id="connectionPortHint" class="note-panel field-wide">Escolha uma porta candidata e conecte a base. O app usa VID:PID, descricao e handshake para validar a placa.</div>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-kicker">Attached board</div>
-          <h3>Resumo da base conectada</h3>
+          <div class="card-kicker">Placa conectada</div>
+          <h3>Identificacao e recursos</h3>
         </div>
       </div>
       <div class="metric-grid">
@@ -90,13 +67,50 @@
           <strong id="connectionButtons">-</strong>
         </div>
       </div>
-      <div id="connectionHint" class="note-panel">Conecte a base para habilitar os setores modulares do app.</div>
+      <div id="connectionHint" class="note-panel">Use o botao do rodape para conectar a base e preencher os dados desta tela.</div>
+      <div id="connectionDetails" class="note-stack mt-3"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Ferramentas</div>
+          <h3>Firmware e utilitarios</h3>
+        </div>
+      </div>
+      <div class="inline-actions">
+        <button id="connectionRefreshSnapshot" class="app-btn secondary">Recarregar snapshot</button>
+        <button id="connectionOpenFirmware" class="app-btn primary">Gravar firmware</button>
+      </div>
+      <div id="connectionTools" class="tool-grid mt-3"></div>
     </article>
   </div>
 </section>
 
         <section id="tab-about" class="tab-page">
   <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Comunidade</div>
+          <h3>Ajuda no Discord</h3>
+        </div>
+      </div>
+      <div class="discord-frame-shell">
+        <iframe src="https://discord.com/widget?id=1061814371174596708&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Criadores</div>
+          <h3>Autores e projeto original</h3>
+        </div>
+      </div>
+      <div id="aboutCreators" class="note-stack"></div>
+    </article>
+
     <article class="card">
       <div class="card-head">
         <div>
@@ -110,28 +124,8 @@
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Termos</div>
-          <h3>Uso, firmware e responsabilidade</h3>
-        </div>
-      </div>
-      <div id="aboutTerms" class="note-stack"></div>
-    </article>
-
-    <article class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-kicker">Informacoes legais</div>
-          <h3>Operacao local e seguranca</h3>
-        </div>
-      </div>
-      <div id="aboutLegal" class="note-stack"></div>
-    </article>
-
-    <article class="card">
-      <div class="card-head">
-        <div>
           <div class="card-kicker">Avisos</div>
-          <h3>Antes de gravar ou aplicar perfis</h3>
+          <h3>Uso, firmware e responsabilidade</h3>
         </div>
       </div>
       <div id="aboutWarnings" class="note-stack"></div>
@@ -144,8 +138,8 @@
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Wheel core</div>
-          <h3>Geometria e encoder</h3>
+          <div class="card-kicker">Basico do volante</div>
+          <h3>Geometria, encoder e ganho principal</h3>
         </div>
       </div>
       <div class="field-grid two-col">
@@ -154,28 +148,27 @@
           <input id="wheelRotationDegRange" type="range" min="30" max="1800" step="1">
           <input id="wheelRotationDeg" type="number" min="30" max="1800" step="1">
         </div>
+        <div class="slider-row field-wide">
+          <label>Ganho geral de Force Feedback</label>
+          <input id="wheelGeneralGainRange" type="range" min="0" max="200" step="1">
+          <input id="wheelGeneralGain" type="number" min="0" max="200" step="1">
+        </div>
         <label class="field">
           <span>Encoder CPR</span>
           <input id="wheelEncoderCpr" type="number" min="4" max="600000" step="1">
         </label>
-        <label class="field">
-          <span id="wheelBrakePressureLabel">Brake scaling</span>
-          <input id="wheelBrakePressure" type="number" min="1" max="255" step="1">
-        </label>
-        <label class="field">
+        <label id="wheelOutputResolutionBox" class="field">
           <span>Resolucao de saida</span>
           <input id="wheelOutputResolution" type="text" readonly>
         </label>
       </div>
-      <div class="inline-actions">
-        <button id="wheelApplyBasic" class="app-btn primary">Aplicar parametros basicos</button>
-      </div>
+      <div class="note-panel">Rotacao define o curso total do volante. Encoder CPR ajusta a leitura do sensor. O ganho geral controla a intensidade base do FFB antes dos ajustes finos.</div>
     </article>
 
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Wheel actions</div>
+          <div class="card-kicker">Acoes do volante</div>
           <h3>Acoes do volante</h3>
         </div>
       </div>
@@ -184,7 +177,7 @@
         <button id="wheelCalibrate" class="app-btn secondary">Recalibrar volante</button>
         <button id="wheelResetZ" class="app-btn secondary">Resetar Z-index</button>
       </div>
-      <div class="note-panel">Essas acoes so liberam quando a firmware conectada suportar a operacao.</div>
+      <div class="note-panel">Os comandos disponiveis dependem do firmware conectado e so aparecem quando fizerem sentido para a base.</div>
     </article>
   </div>
 </section>
@@ -196,10 +189,12 @@
         <div class="ffb-hero">
           <div>
             <div class="card-kicker">Force Feedback</div>
-            <h3>Centro de ajuste do FFB</h3>
-            <p class="card-subtitle">Ganhos principais aqui na frente. Saida, byte E e eixo ficam na engrenagem para a tela respirar melhor.</p>
+            <h3>Ajustes finos e efeitos de desktop</h3>
           </div>
-          <button id="ffbOpenOutputModal" class="app-btn secondary shell-icon-btn" title="Abrir configuracoes de saida"><i class="bi bi-gear-fill"></i></button>
+          <div class="inline-actions compact-actions">
+            <button id="ffbOpenGuideModal" class="app-btn secondary">O que faz cada ajuste?</button>
+            <button id="ffbOpenOutputModal" class="app-btn secondary shell-icon-btn" title="Abrir configuracoes de saida"><i class="bi bi-gear-fill"></i></button>
+          </div>
         </div>
       </div>
       <div class="ffb-summary-grid">
@@ -216,8 +211,29 @@
           <strong id="ffbEffectsSummary">-</strong>
         </div>
       </div>
+      <div class="desktop-effects-grid mb-3">
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Auto-center</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Recentro artificial usado fora dos efeitos enviados pelo jogo.</small>
+          <input id="ffbCenterMirrorRange" type="range" min="0" max="200" step="1">
+        </div>
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Damper</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopDamper" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Resistencia proporcional a velocidade do movimento.</small>
+          <input id="ffbDamperMirrorRange" type="range" min="0" max="200" step="1">
+        </div>
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Inertia</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopInertia" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Simula massa e oposicao a aceleracoes bruscas.</small>
+          <input id="ffbInertiaMirrorRange" type="range" min="0" max="200" step="1">
+        </div>
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Friction</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopFriction" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Atrito seco para dar peso em pequenas mudancas.</small>
+          <input id="ffbFrictionMirrorRange" type="range" min="0" max="200" step="1">
+        </div>
+      </div>
       <div class="slider-grid slider-grid-ffb">
-        <div class="slider-card"><div class="slider-row"><label>Geral</label><input id="ffbGeneralRange" type="range" min="0" max="200" step="1"><input id="ffbGeneral" type="number" min="0" max="200"></div></div>
         <div class="slider-card"><div class="slider-row"><label>Constante</label><input id="ffbConstantRange" type="range" min="0" max="200" step="1"><input id="ffbConstant" type="number" min="0" max="200"></div></div>
         <div class="slider-card"><div class="slider-row"><label>Damper</label><input id="ffbDamperRange" type="range" min="0" max="200" step="1"><input id="ffbDamper" type="number" min="0" max="200"></div></div>
         <div class="slider-card"><div class="slider-row"><label>Friction</label><input id="ffbFrictionRange" type="range" min="0" max="200" step="1"><input id="ffbFriction" type="number" min="0" max="200"></div></div>
@@ -227,10 +243,6 @@
         <div class="slider-card"><div class="slider-row"><label>Auto-center</label><input id="ffbCenterRange" type="range" min="0" max="200" step="1"><input id="ffbCenter" type="number" min="0" max="200"></div></div>
         <div class="slider-card"><div class="slider-row"><label>End stop</label><input id="ffbStopRange" type="range" min="0" max="200" step="1"><input id="ffbStop" type="number" min="0" max="200"></div></div>
         <div class="slider-card"><div class="slider-row"><label>Min torque</label><input id="ffbMinTorqueRange" type="range" min="0" max="200" step="1"><input id="ffbMinTorque" type="number" min="0" max="200"></div></div>
-      </div>
-      <div class="inline-actions">
-        <button id="ffbApplyGains" class="app-btn primary">Aplicar ganhos FFB</button>
-        <button id="ffbResetDraft" class="app-btn secondary">Descartar alteracoes locais</button>
       </div>
     </article>
   </div>
@@ -251,7 +263,7 @@
       </div>
       <div class="metric-grid">
         <div class="metric-box">
-          <span>Brake scaling</span>
+          <span id="pedalsBrakePressureLabel">Brake scaling</span>
           <strong id="pedalsBrakePressure">-</strong>
         </div>
         <div class="metric-box">
@@ -269,6 +281,11 @@
       </div>
       <div class="inline-actions">
         <button id="pedalsRecalibrate" class="app-btn primary">Recalibrar pedais</button>
+      </div>
+      <div id="pedalsBrakePressureField" class="slider-row field-wide mt-3">
+        <label id="pedalsBrakePressureFieldLabel">Brake scaling</label>
+        <input id="pedalsBrakePressureRange" type="range" min="1" max="255" step="1">
+        <input id="pedalsBrakePressureInput" type="number" min="1" max="255" step="1">
       </div>
     </article>
 
@@ -337,7 +354,6 @@
         </div>
       </div>
       <div class="inline-actions">
-        <button id="pedalsApplyManual" class="app-btn primary">Aplicar calibracao manual</button>
         <button id="pedalsResetDraft" class="app-btn secondary">Descartar alteracoes locais</button>
       </div>
     </article>
@@ -349,8 +365,8 @@
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">XY shifter</div>
-          <h3>Matriz do cambio de potenciometros</h3>
+          <div class="card-kicker">Cambio XY</div>
+          <h3>Matriz visual do cambio</h3>
         </div>
       </div>
       <div class="metric-grid">
@@ -363,41 +379,53 @@
           <strong id="shifterSlotValue">N</strong>
         </div>
       </div>
-      <div class="axis-block">
-        <div class="axis-row">
-          <span>X axis</span>
-          <div class="axis-track"><div id="shifterAxisXBar" class="axis-fill axis-fill-a"></div></div>
-        </div>
-        <div class="axis-row">
-          <span>Y axis</span>
-          <div class="axis-track"><div id="shifterAxisYBar" class="axis-fill axis-fill-b"></div></div>
+      <div class="shifter-visual-shell">
+        <div class="shifter-axis-label shifter-axis-label-y">Y</div>
+        <div id="shifterVisualGrid" class="shifter-visual-grid">
+          <div class="shifter-grid-lines"></div>
+          <div id="shifterBoundaryX0" class="shifter-boundary vertical" data-axis="x" data-index="0"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryX1" class="shifter-boundary vertical" data-axis="x" data-index="1"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryX2" class="shifter-boundary vertical" data-axis="x" data-index="2"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryY0" class="shifter-boundary horizontal" data-axis="y" data-index="0"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryY1" class="shifter-boundary horizontal" data-axis="y" data-index="1"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterLiveMarker" class="shifter-live-marker"></div>
+          <div class="shifter-slot-label slot-r1">1</div>
+          <div class="shifter-slot-label slot-r3">3</div>
+          <div class="shifter-slot-label slot-r5">5</div>
+          <div id="shifterSlotRightTop" class="shifter-slot-label slot-r7">R</div>
+          <div class="shifter-slot-label slot-r2">2</div>
+          <div class="shifter-slot-label slot-r4">4</div>
+          <div class="shifter-slot-label slot-r6">6</div>
+          <div id="shifterSlotRightBottom" class="shifter-slot-label slot-r8">R</div>
+          <div class="shifter-slot-label slot-neutral">N</div>
         </div>
       </div>
-      <div id="shifterGearMatrix" class="gear-grid"></div>
+      <div class="shifter-divider-readout">
+        <span id="shifterXCutSummary">X: 0 / 0 / 0</span>
+        <span id="shifterYCutSummary">Y: 0 / 0</span>
+      </div>
     </article>
 
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Calibration</div>
+          <div class="card-kicker">Configuracao</div>
           <h3>Faixas e comportamento</h3>
         </div>
       </div>
-      <div class="field-grid two-col">
-        <label class="field"><span>A</span><input id="shifterCalA" type="number" min="0" max="1023"></label>
-        <label class="field"><span>B</span><input id="shifterCalB" type="number" min="0" max="1023"></label>
-        <label class="field"><span>C</span><input id="shifterCalC" type="number" min="0" max="1023"></label>
-        <label class="field"><span>D</span><input id="shifterCalD" type="number" min="0" max="1023"></label>
-        <label class="field field-wide"><span>E</span><input id="shifterCalE" type="number" min="0" max="1023"></label>
-      </div>
-      <div class="field-grid two-col">
+      <div class="note-panel">Arraste as divisorias no quadro ao lado para definir os cortes de marcha. A bolinha mostra a posicao atual lida do cambio em tempo real.</div>
+      <div class="field-grid two-col mt-3">
         <label class="toggle-row"><input id="shifterCfgReverse" type="checkbox"><span>Reverse invertido</span></label>
         <label class="toggle-row"><input id="shifterCfgGear8" type="checkbox"><span>Modo 8 marchas</span></label>
         <label class="toggle-row"><input id="shifterCfgInvertX" type="checkbox"><span>Inverter eixo X</span></label>
         <label class="toggle-row"><input id="shifterCfgInvertY" type="checkbox"><span>Inverter eixo Y</span></label>
       </div>
-      <div class="inline-actions">
-        <button id="shifterApplyConfig" class="app-btn primary">Aplicar calibracao do cambio</button>
+      <div class="metric-grid mt-3">
+        <div class="metric-box"><span>Corte X esquerdo</span><strong id="shifterCalAValue">0</strong></div>
+        <div class="metric-box"><span>Corte X centro</span><strong id="shifterCalBValue">0</strong></div>
+        <div class="metric-box"><span>Corte X direito</span><strong id="shifterCalCValue">0</strong></div>
+        <div class="metric-box"><span>Corte Y superior</span><strong id="shifterCalDValue">0</strong></div>
+        <div class="metric-box"><span>Corte Y inferior</span><strong id="shifterCalEValue">0</strong></div>
       </div>
     </article>
   </div>
@@ -428,10 +456,10 @@
       <div class="card-head">
         <div>
           <div class="card-kicker">Traffic</div>
-          <h3>Historico TX / RX</h3>
+          <h3>Monitor serial</h3>
         </div>
       </div>
-      <div id="serialHistory" class="stack-list"></div>
+      <div id="serialHistory" class="serial-monitor"></div>
     </article>
   </div>
 </section>
@@ -444,8 +472,7 @@
       <div class="dock-group dock-group-left">
         <select id="dockPortSelect" class="form-select form-select-sm"></select>
         <button id="dockRefreshPorts" class="btn btn-sm btn-outline-light shell-btn" title="Atualizar portas"><i class="bi bi-arrow-repeat"></i></button>
-        <button id="dockConnect" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
-        <button id="dockDisconnect" class="btn btn-sm shell-btn">Desconectar</button>
+        <button id="dockConnectToggle" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
       </div>
 
       <div class="dock-group dock-group-center">
@@ -464,65 +491,61 @@
   </div>
 
   <div class="modal fade" id="profileOptionsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content modal-glass">
         <div class="modal-header">
           <div>
             <div class="mini-label">Perfis</div>
-            <h5 class="modal-title mb-0">Opcoes de perfil</h5>
+            <h5 class="modal-title mb-0">Gerenciador de perfis</h5>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-          <div class="page-grid">
-            <article class="card shell-card">
-              <div class="card-head">
-                <div>
-                  <div class="card-kicker">Perfil ativo</div>
-                  <h3 id="profileOptionsCurrentName">Nenhum perfil selecionado</h3>
-                </div>
-              </div>
-              <div id="profileOptionsHint" class="note-panel">Selecione um perfil no rodape para editar, ou crie um novo a partir da base conectada.</div>
-            </article>
-
-            <article class="card shell-card">
-              <div class="card-head">
-                <div>
-                  <div class="card-kicker">Novo perfil</div>
-                  <h3>Criar a partir da configuracao atual</h3>
-                </div>
+          <div class="profile-manager">
+            <aside class="profile-list-panel">
+              <div class="profile-toolbar">
+                <button id="profileCreateNew" class="app-btn primary shell-icon-btn" title="Criar novo perfil"><i class="bi bi-plus-lg"></i></button>
+                <button id="profileOptionOverwrite" class="app-btn secondary" title="Salvar por cima do perfil selecionado">Sobrescrever</button>
+                <button id="profileOptionRename" class="app-btn secondary" title="Renomear perfil">Renomear</button>
+                <button id="profileOptionOpenJson" class="app-btn secondary" title="Abrir editor JSON">JSON</button>
+                <button id="profileOptionDelete" class="app-btn shell-btn-danger" title="Excluir perfil">Excluir</button>
               </div>
               <div class="field-grid">
                 <label class="field field-wide">
-                  <span>Nome do novo perfil</span>
+                  <span>Novo perfil</span>
                   <input id="profileCreateName" type="text" maxlength="64" placeholder="meu-perfil">
                 </label>
-                <div class="inline-actions">
-                  <button id="profileCreateNew" class="app-btn primary">Criar novo perfil</button>
-                </div>
               </div>
-            </article>
+              <div id="profileList" class="profile-list"></div>
+            </aside>
 
-            <article class="card shell-card">
-              <div class="card-head">
-                <div>
-                  <div class="card-kicker">Perfil selecionado</div>
-                  <h3>Renomear, sobrescrever e excluir</h3>
+            <section class="profile-detail-panel">
+              <div class="card shell-card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-kicker">Perfil selecionado</div>
+                    <h3 id="profileOptionsCurrentName">Nenhum perfil selecionado</h3>
+                  </div>
+                </div>
+                <div id="profileOptionsHint" class="note-panel">Selecione um perfil na lista ou crie um novo a partir da base conectada.</div>
+              </div>
+
+              <div class="card shell-card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-kicker">Ferramentas</div>
+                    <h3>Detalhes e nome</h3>
+                  </div>
+                </div>
+                <div class="field-grid">
+                  <label class="field field-wide">
+                    <span>Novo nome</span>
+                    <input id="profileRenameName" type="text" maxlength="64" placeholder="novo-nome">
+                  </label>
+                  <div id="profileMeta" class="note-stack"></div>
                 </div>
               </div>
-              <div class="field-grid">
-                <label class="field field-wide">
-                  <span>Novo nome</span>
-                  <input id="profileRenameName" type="text" maxlength="64" placeholder="novo-nome">
-                </label>
-                <div class="inline-actions">
-                  <button id="profileOptionOverwrite" class="app-btn primary">Salvar por cima do atual</button>
-                  <button id="profileOptionRename" class="app-btn secondary">Renomear</button>
-                  <button id="profileOptionOpenJson" class="app-btn secondary">Editor JSON</button>
-                  <button id="profileOptionDelete" class="app-btn shell-btn-danger">Excluir</button>
-                </div>
-              </div>
-            </article>
+            </section>
           </div>
         </div>
         <div class="modal-footer">
@@ -644,6 +667,9 @@
                     <div class="mini-label mb-2">Etapa 3</div>
                     <h3 class="wizard-title">Busca do firmware mais compativel</h3>
                     <div class="note-panel mb-3">Marque os recursos desejados. Se nao existir um build perfeito, o app sugere o que cobre mais funcoes e lista o que esta faltando.</div>
+                    <div class="inline-actions mb-3">
+                      <button id="firmwareFeaturesInfo" class="app-btn secondary">O que significa cada recurso?</button>
+                    </div>
                     <div id="firmwareFeatureFilters" class="filter-grid mb-3"></div>
                     <div class="field-grid two-col">
                       <label class="field">
@@ -692,6 +718,30 @@
     </div>
   </div>
 
+  <div class="modal fade" id="firmwareFeatureInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Firmware</div>
+            <h5 class="modal-title mb-0">Recursos e siglas</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="field-grid">
+            <label class="field field-wide">
+              <span>Digite um codigo ou flags</span>
+              <input id="firmwareExplainInput" type="text" placeholder="Ex.: 230x, azf, mrst">
+            </label>
+            <div id="firmwareExplainResult" class="note-panel">Digite um codigo de firmware ou uma sequencia de flags para ver a traducao.</div>
+            <div id="firmwareFeatureInfoList" class="note-stack"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal fade" id="ffbOutputModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content modal-glass">
@@ -728,27 +778,38 @@
               <input id="ffbOutputPhase" type="checkbox">
               <span>Phase correct</span>
             </label>
-            <label class="toggle-row"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Auto-center spring</span></label>
-            <label class="toggle-row"><input id="ffbDesktopDamper" type="checkbox"><span>Damper</span></label>
-            <label class="toggle-row"><input id="ffbDesktopInertia" type="checkbox"><span>Inertia</span></label>
-            <label class="toggle-row"><input id="ffbDesktopFriction" type="checkbox"><span>Friction</span></label>
-            <label class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial</span></label>
-            <label class="field field-wide">
-              <span>Eixo FFB</span>
+            <label id="ffbDesktopMonitorField" class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial</span></label>
+            <label id="ffbDesktopAxisField" class="field field-wide">
+              <span>Eixo que alimenta o xFFB</span>
               <select id="ffbDesktopAxis">
                 <option value="0">X</option>
                 <option value="1">Y</option>
                 <option value="2">Z</option>
                 <option value="3">RX</option>
                 <option value="4">RY</option>
-                <option value="5">RZ</option>
               </select>
             </label>
           </div>
         </div>
         <div class="modal-footer">
-          <button id="ffbApplyOutput" class="btn btn-outline-secondary">Aplicar saida</button>
-          <button id="ffbApplyDesktop" class="btn btn-primary">Aplicar byte E</button>
+          <div class="note-panel">Bits 5-7 do byte E escolhem qual eixo alimenta o xFFB analogico quando a firmware suporta essa troca.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="ffbGuideModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Force Feedback</div>
+            <h5 class="modal-title mb-0">Guia rapido dos ajustes</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="ffbGuideList" class="note-stack"></div>
         </div>
       </div>
     </div>

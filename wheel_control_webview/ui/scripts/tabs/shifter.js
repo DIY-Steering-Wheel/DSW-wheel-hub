@@ -1,42 +1,75 @@
 (function () {
   var module = {};
 
+  module.state = {
+    draft: null,
+    timer: null,
+    drag: null
+  };
+
   module.bind = function (app) {
-    app.byId("shifterApplyConfig").onclick = function () {
-      app.callApi("update_shifter_settings", [collectConfig()]);
-    };
+    ["shifterCfgReverse", "shifterCfgGear8", "shifterCfgInvertX", "shifterCfgInvertY"].forEach(function (id) {
+      app.byId(id).onchange = function () {
+        ensureDraft();
+        module.state.draft.cfg = collectCfg();
+        renderDraftMeta();
+        queueSend();
+      };
+    });
+    bindBoundaryDrag();
   };
 
   module.render = function (snapshot, app) {
+    var shifter;
+    var slot;
     if (!snapshot.shifter.available) {
       return;
     }
 
-    app.idleSet("shifterCalA", snapshot.shifter.cal[0]);
-    app.idleSet("shifterCalB", snapshot.shifter.cal[1]);
-    app.idleSet("shifterCalC", snapshot.shifter.cal[2]);
-    app.idleSet("shifterCalD", snapshot.shifter.cal[3]);
-    app.idleSet("shifterCalE", snapshot.shifter.cal[4]);
-    app.byId("shifterCfgReverse").checked = !!snapshot.shifter.cfg_flags.reverse_inverted;
-    app.byId("shifterCfgGear8").checked = !!snapshot.shifter.cfg_flags.gear8_mode;
-    app.byId("shifterCfgInvertX").checked = !!snapshot.shifter.cfg_flags.invert_x;
-    app.byId("shifterCfgInvertY").checked = !!snapshot.shifter.cfg_flags.invert_y;
+    if (!snapshot.connected) {
+      module.state.draft = null;
+      stopTimer();
+    }
 
+    shifter = mergeDraft(snapshot.shifter);
+    slot = estimateSlot(shifter);
+
+    app.idleCheck("shifterCfgReverse", !!shifter.cfg_flags.reverse_inverted);
+    app.idleCheck("shifterCfgGear8", !!shifter.cfg_flags.gear8_mode);
+    app.idleCheck("shifterCfgInvertX", !!shifter.cfg_flags.invert_x);
+    app.idleCheck("shifterCfgInvertY", !!shifter.cfg_flags.invert_y);
     app.setText("shifterLiveValue", snapshot.shifter.live.x + " / " + snapshot.shifter.live.y, "");
-    setTrack("shifterAxisXBar", snapshot.shifter.live.x);
-    setTrack("shifterAxisYBar", snapshot.shifter.live.y);
-
-    var slot = estimateSlot(snapshot.shifter);
     app.setText("shifterSlotValue", slot.label, "");
-    renderMatrix(snapshot.shifter, slot.key);
 
-    app.byId("shifterApplyConfig").disabled = !snapshot.connected;
+    renderVisual(shifter, snapshot.shifter.live, slot.key);
+    renderDraftMeta(shifter);
   };
 
-  function setTrack(id, value) {
-    var element = window.BRWheelApp.byId(id);
-    var width = Math.round((Math.max(0, Math.min(1023, Number(value || 0))) / 1023) * 100);
-    element.style.width = width + "%";
+  function stopTimer() {
+    if (module.state.timer) {
+      window.clearTimeout(module.state.timer);
+      module.state.timer = null;
+    }
+  }
+
+  function ensureDraft() {
+    var snapshot = window.BRWheelApp.state.snapshot;
+    if (!module.state.draft && snapshot) {
+      module.state.draft = {
+        cal: snapshot.shifter.cal.slice(0, 5),
+        cfg: snapshot.shifter.cfg
+      };
+    }
+  }
+
+  function mergeDraft(shifter) {
+    var merged = JSON.parse(JSON.stringify(shifter));
+    if (module.state.draft) {
+      merged.cal = module.state.draft.cal.slice(0, 5);
+      merged.cfg = module.state.draft.cfg;
+      merged.cfg_flags = decodeCfg(module.state.draft.cfg);
+    }
+    return merged;
   }
 
   function estimateSlot(shifter) {
@@ -93,27 +126,128 @@
     return { key: key, label: label };
   }
 
-  function renderMatrix(shifter, activeKey) {
-    var wrap = window.BRWheelApp.byId("shifterGearMatrix");
-    var cells = [
-      shifter.cfg_flags.gear8_mode ? "7" : "R", "5", "3", "1",
-      "-", "-", "-", "-",
-      shifter.cfg_flags.gear8_mode ? "8" : "R", "6", "4", "2"
-    ];
-    var index;
-    window.BRWheelApp.clearChildren(wrap);
-    for (index = 0; index < cells.length; index += 1) {
-      var cell = document.createElement("div");
-      cell.className = "gear-cell";
-      if (cells[index] === activeKey) {
-        cell.className += " active";
-      }
-      cell.appendChild(document.createTextNode(cells[index]));
-      wrap.appendChild(cell);
+  function renderVisual(shifter, live, activeKey) {
+    positionBoundary("shifterBoundaryX0", "x", shifter.cal[0]);
+    positionBoundary("shifterBoundaryX1", "x", shifter.cal[1]);
+    positionBoundary("shifterBoundaryX2", "x", shifter.cal[2]);
+    positionBoundary("shifterBoundaryY0", "y", shifter.cal[3]);
+    positionBoundary("shifterBoundaryY1", "y", shifter.cal[4]);
+    positionMarker(live);
+    window.BRWheelApp.setText("shifterSlotRightTop", shifter.cfg_flags.gear8_mode ? "7" : "R", "");
+    window.BRWheelApp.setText("shifterSlotRightBottom", shifter.cfg_flags.gear8_mode ? "8" : "R", "");
+    highlightActiveGear(activeKey);
+  }
+
+  function renderDraftMeta(shifter) {
+    var active = shifter || mergeDraft(window.BRWheelApp.state.snapshot.shifter);
+    var cal = active.cal;
+    window.BRWheelApp.setText("shifterCalAValue", cal[0], "");
+    window.BRWheelApp.setText("shifterCalBValue", cal[1], "");
+    window.BRWheelApp.setText("shifterCalCValue", cal[2], "");
+    window.BRWheelApp.setText("shifterCalDValue", cal[3], "");
+    window.BRWheelApp.setText("shifterCalEValue", cal[4], "");
+    window.BRWheelApp.setText("shifterXCutSummary", "X: " + cal[0] + " / " + cal[1] + " / " + cal[2], "");
+    window.BRWheelApp.setText("shifterYCutSummary", "Y: " + cal[3] + " / " + cal[4], "");
+  }
+
+  function positionBoundary(id, axis, value) {
+    var element = window.BRWheelApp.byId(id);
+    var pct = Math.max(0, Math.min(1023, Number(value || 0))) / 1023 * 100;
+    if (axis === "x") {
+      element.style.left = pct + "%";
+    } else {
+      element.style.top = pct + "%";
     }
   }
 
-  function collectConfig() {
+  function positionMarker(live) {
+    var marker = window.BRWheelApp.byId("shifterLiveMarker");
+    marker.style.left = (Math.max(0, Math.min(1023, Number(live.x || 0))) / 1023 * 100) + "%";
+    marker.style.top = (Math.max(0, Math.min(1023, Number(live.y || 0))) / 1023 * 100) + "%";
+  }
+
+  function highlightActiveGear(activeKey) {
+    var labels = document.querySelectorAll(".shifter-slot-label");
+    labels.forEach(function (label) {
+      label.classList.toggle("active", label.textContent === String(activeKey));
+    });
+  }
+
+  function bindBoundaryDrag() {
+    var boundaries = document.querySelectorAll(".shifter-boundary");
+
+    boundaries.forEach(function (boundary) {
+      boundary.addEventListener("pointerdown", function (event) {
+        event.preventDefault();
+        ensureDraft();
+        module.state.drag = {
+          axis: boundary.getAttribute("data-axis"),
+          index: Number(boundary.getAttribute("data-index"))
+        };
+        if (boundary.setPointerCapture) {
+          boundary.setPointerCapture(event.pointerId);
+        }
+      });
+    });
+
+    document.addEventListener("pointermove", function (event) {
+      var grid;
+      var rect;
+      var value;
+      if (!module.state.drag) {
+        return;
+      }
+      grid = window.BRWheelApp.byId("shifterVisualGrid");
+      rect = grid.getBoundingClientRect();
+      if (module.state.drag.axis === "x") {
+        value = Math.round(((event.clientX - rect.left) / rect.width) * 1023);
+      } else {
+        value = Math.round(((event.clientY - rect.top) / rect.height) * 1023);
+      }
+      setBoundaryValue(module.state.drag.axis, module.state.drag.index, value);
+    });
+
+    document.addEventListener("pointerup", function () {
+      module.state.drag = null;
+    });
+  }
+
+  function setBoundaryValue(axis, index, value) {
+    var bounds;
+    var shifter;
+    ensureDraft();
+    if (axis === "x") {
+      bounds = module.state.draft.cal.slice(0, 3);
+      bounds[index] = clamp(value);
+      bounds.sort(sortNumber);
+      module.state.draft.cal[0] = bounds[0];
+      module.state.draft.cal[1] = bounds[1];
+      module.state.draft.cal[2] = bounds[2];
+    } else {
+      bounds = module.state.draft.cal.slice(3, 5);
+      bounds[index] = clamp(value);
+      bounds.sort(sortNumber);
+      module.state.draft.cal[3] = bounds[0];
+      module.state.draft.cal[4] = bounds[1];
+    }
+    shifter = mergeDraft(window.BRWheelApp.state.snapshot.shifter);
+    renderVisual(shifter, window.BRWheelApp.state.snapshot.shifter.live, estimateSlot(shifter).key);
+    renderDraftMeta(shifter);
+    queueSend();
+  }
+
+  function queueSend() {
+    stopTimer();
+    module.state.timer = window.setTimeout(function () {
+      window.BRWheelApp.callApi("update_shifter_settings", [collectConfig()]).then(function (result) {
+        if (result && result.ok) {
+          module.state.draft = null;
+        }
+      });
+    }, 220);
+  }
+
+  function collectCfg() {
     var cfg = 0;
     if (window.BRWheelApp.byId("shifterCfgReverse").checked) {
       cfg |= 1;
@@ -127,14 +261,36 @@
     if (window.BRWheelApp.byId("shifterCfgInvertY").checked) {
       cfg |= 8;
     }
+    return cfg;
+  }
+
+  function collectConfig() {
+    ensureDraft();
     return {
-      cal_0: Number(window.BRWheelApp.byId("shifterCalA").value),
-      cal_1: Number(window.BRWheelApp.byId("shifterCalB").value),
-      cal_2: Number(window.BRWheelApp.byId("shifterCalC").value),
-      cal_3: Number(window.BRWheelApp.byId("shifterCalD").value),
-      cal_4: Number(window.BRWheelApp.byId("shifterCalE").value),
-      cfg: cfg
+      cal_0: Number(module.state.draft.cal[0]),
+      cal_1: Number(module.state.draft.cal[1]),
+      cal_2: Number(module.state.draft.cal[2]),
+      cal_3: Number(module.state.draft.cal[3]),
+      cal_4: Number(module.state.draft.cal[4]),
+      cfg: collectCfg()
     };
+  }
+
+  function decodeCfg(cfg) {
+    return {
+      reverse_inverted: !!(cfg & 1),
+      gear8_mode: !!(cfg & 2),
+      invert_x: !!(cfg & 4),
+      invert_y: !!(cfg & 8)
+    };
+  }
+
+  function clamp(value) {
+    return Math.max(0, Math.min(1023, Number(value || 0)));
+  }
+
+  function sortNumber(a, b) {
+    return a - b;
   }
 
   window.BRWheelApp.registerTab("shifter", module);

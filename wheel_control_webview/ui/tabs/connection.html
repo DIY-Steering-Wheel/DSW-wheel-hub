@@ -3,31 +3,8 @@
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Conexao</div>
-          <h3>Portas, handshake e firmware</h3>
-        </div>
-      </div>
-      <div class="field-grid">
-        <label class="field field-wide">
-          <span>Porta selecionada</span>
-          <select id="connectionPortSelect"></select>
-        </label>
-        <div class="inline-actions">
-          <button id="connectionRefreshPorts" class="app-btn secondary">Atualizar portas</button>
-          <button id="connectionRefreshSnapshot" class="app-btn secondary">Recarregar snapshot</button>
-          <button id="connectionConnect" class="app-btn primary">Conectar</button>
-          <button id="connectionDisconnect" class="app-btn secondary">Desconectar</button>
-          <button id="connectionOpenFirmware" class="app-btn primary">Gravar firmware</button>
-        </div>
-        <div id="connectionPortHint" class="note-panel field-wide">Escolha uma porta candidata e conecte a base. O app usa VID:PID, descricao e handshake para validar a placa.</div>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-kicker">Attached board</div>
-          <h3>Resumo da base conectada</h3>
+          <div class="card-kicker">Placa conectada</div>
+          <h3>Identificacao e recursos</h3>
         </div>
       </div>
       <div class="metric-grid">
@@ -64,7 +41,22 @@
           <strong id="connectionButtons">-</strong>
         </div>
       </div>
-      <div id="connectionHint" class="note-panel">Conecte a base para habilitar os setores modulares do app.</div>
+      <div id="connectionHint" class="note-panel">Use o botao do rodape para conectar a base e preencher os dados desta tela.</div>
+      <div id="connectionDetails" class="note-stack mt-3"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Ferramentas</div>
+          <h3>Firmware e utilitarios</h3>
+        </div>
+      </div>
+      <div class="inline-actions">
+        <button id="connectionRefreshSnapshot" class="app-btn secondary">Recarregar snapshot</button>
+        <button id="connectionOpenFirmware" class="app-btn primary">Gravar firmware</button>
+      </div>
+      <div id="connectionTools" class="tool-grid mt-3"></div>
     </article>
   </div>
 </section>

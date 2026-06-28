@@ -1,12 +1,16 @@
 (function () {
   var module = {};
 
-  module.bind = function (app) {
-    bindPair("wheelRotationDeg", "wheelRotationDegRange");
+  module.state = {
+    draft: null,
+    timer: null
+  };
 
-    app.byId("wheelApplyBasic").onclick = function () {
-      app.callApi("update_basic_settings", [collectBasic()]);
-    };
+  module.bind = function (app) {
+    bindPair("wheelRotationDeg", "wheelRotationDegRange", "rotation_deg");
+    bindPair("wheelGeneralGain", "wheelGeneralGainRange", "general_gain");
+    bindInput("wheelEncoderCpr", "encoder_cpr");
+
     app.byId("wheelCenter").onclick = function () {
       app.callApi("run_action", ["center"]);
     };
@@ -19,35 +23,89 @@
   };
 
   module.render = function (snapshot, app) {
-    app.idleSet("wheelRotationDeg", snapshot.settings.rotation_deg);
-    app.idleSet("wheelRotationDegRange", snapshot.settings.rotation_deg);
-    app.idleSet("wheelEncoderCpr", snapshot.settings.encoder_cpr);
-    app.idleSet("wheelBrakePressure", snapshot.settings.brake_pressure);
-    app.idleSet("wheelOutputResolution", snapshot.settings.output_resolution);
-    app.setText("wheelBrakePressureLabel", app.text(snapshot.settings.brake_pressure_label, "Brake scaling"), "Brake scaling");
+    var values;
+    if (!snapshot.connected) {
+      module.state.draft = null;
+      if (module.state.timer) {
+        window.clearTimeout(module.state.timer);
+        module.state.timer = null;
+      }
+    }
 
-    app.byId("wheelApplyBasic").disabled = !snapshot.connected;
+    values = module.state.draft || snapshot.settings;
+    app.idleSet("wheelRotationDeg", values.rotation_deg);
+    app.idleSet("wheelRotationDegRange", values.rotation_deg);
+    app.idleSet("wheelGeneralGain", values.general_gain);
+    app.idleSet("wheelGeneralGainRange", values.general_gain);
+    app.idleSet("wheelEncoderCpr", values.encoder_cpr);
+    app.idleSet("wheelOutputResolution", snapshot.settings.output_resolution);
+    app.toggleHidden(app.byId("wheelOutputResolutionBox"), !snapshot.capabilities.supports_output_setup);
+
     app.byId("wheelCenter").disabled = !snapshot.connected;
     app.byId("wheelCalibrate").disabled = !snapshot.connected;
+    app.toggleHidden(app.byId("wheelResetZ"), !snapshot.capabilities.supports_z_reset);
     app.byId("wheelResetZ").disabled = !snapshot.connected || !snapshot.capabilities.supports_z_reset;
   };
 
-  function bindPair(numberId, rangeId) {
+  function ensureDraft() {
+    if (!module.state.draft && window.BRWheelApp.state.snapshot) {
+      module.state.draft = {
+        rotation_deg: window.BRWheelApp.state.snapshot.settings.rotation_deg,
+        encoder_cpr: window.BRWheelApp.state.snapshot.settings.encoder_cpr,
+        general_gain: window.BRWheelApp.state.snapshot.settings.general_gain
+      };
+    }
+  }
+
+  function queueSend() {
+    if (module.state.timer) {
+      window.clearTimeout(module.state.timer);
+    }
+    module.state.timer = window.setTimeout(function () {
+      var payload;
+      if (!module.state.draft) {
+        return;
+      }
+      payload = {
+        rotation_deg: Number(module.state.draft.rotation_deg),
+        encoder_cpr: Number(module.state.draft.encoder_cpr)
+      };
+      window.BRWheelApp.callApi("update_basic_settings", [payload]).then(function (result) {
+        if (!(result && result.ok)) {
+          return;
+        }
+        return window.BRWheelApp.callApi("update_ffb_settings", [{ general_gain: Number(module.state.draft.general_gain) }]).then(function (ffbResult) {
+          if (ffbResult && ffbResult.ok) {
+            module.state.draft = null;
+          }
+        });
+      });
+    }, 220);
+  }
+
+  function bindPair(numberId, rangeId, key) {
     var numberInput = window.BRWheelApp.byId(numberId);
     var rangeInput = window.BRWheelApp.byId(rangeId);
     numberInput.oninput = function () {
+      ensureDraft();
+      module.state.draft[key] = Number(numberInput.value);
       rangeInput.value = numberInput.value;
+      queueSend();
     };
     rangeInput.oninput = function () {
+      ensureDraft();
+      module.state.draft[key] = Number(rangeInput.value);
       numberInput.value = rangeInput.value;
+      queueSend();
     };
   }
 
-  function collectBasic() {
-    return {
-      rotation_deg: Number(window.BRWheelApp.byId("wheelRotationDeg").value),
-      encoder_cpr: Number(window.BRWheelApp.byId("wheelEncoderCpr").value),
-      brake_pressure: Number(window.BRWheelApp.byId("wheelBrakePressure").value)
+  function bindInput(id, key) {
+    var input = window.BRWheelApp.byId(id);
+    input.oninput = function () {
+      ensureDraft();
+      module.state.draft[key] = Number(input.value);
+      queueSend();
     };
   }
 

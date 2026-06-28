@@ -3,8 +3,8 @@
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Wheel core</div>
-          <h3>Geometria e encoder</h3>
+          <div class="card-kicker">Basico do volante</div>
+          <h3>Geometria, encoder e ganho principal</h3>
         </div>
       </div>
       <div class="field-grid two-col">
@@ -13,28 +13,27 @@
           <input id="wheelRotationDegRange" type="range" min="30" max="1800" step="1">
           <input id="wheelRotationDeg" type="number" min="30" max="1800" step="1">
         </div>
+        <div class="slider-row field-wide">
+          <label>Ganho geral de Force Feedback</label>
+          <input id="wheelGeneralGainRange" type="range" min="0" max="200" step="1">
+          <input id="wheelGeneralGain" type="number" min="0" max="200" step="1">
+        </div>
         <label class="field">
           <span>Encoder CPR</span>
           <input id="wheelEncoderCpr" type="number" min="4" max="600000" step="1">
         </label>
-        <label class="field">
-          <span id="wheelBrakePressureLabel">Brake scaling</span>
-          <input id="wheelBrakePressure" type="number" min="1" max="255" step="1">
-        </label>
-        <label class="field">
+        <label id="wheelOutputResolutionBox" class="field">
           <span>Resolucao de saida</span>
           <input id="wheelOutputResolution" type="text" readonly>
         </label>
       </div>
-      <div class="inline-actions">
-        <button id="wheelApplyBasic" class="app-btn primary">Aplicar parametros basicos</button>
-      </div>
+      <div class="note-panel">Rotacao define o curso total do volante. Encoder CPR ajusta a leitura do sensor. O ganho geral controla a intensidade base do FFB antes dos ajustes finos.</div>
     </article>
 
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Wheel actions</div>
+          <div class="card-kicker">Acoes do volante</div>
           <h3>Acoes do volante</h3>
         </div>
       </div>
@@ -43,7 +42,7 @@
         <button id="wheelCalibrate" class="app-btn secondary">Recalibrar volante</button>
         <button id="wheelResetZ" class="app-btn secondary">Resetar Z-index</button>
       </div>
-      <div class="note-panel">Essas acoes so liberam quando a firmware conectada suportar a operacao.</div>
+      <div class="note-panel">Os comandos disponiveis dependem do firmware conectado e so aparecem quando fizerem sentido para a base.</div>
     </article>
   </div>
 </section>

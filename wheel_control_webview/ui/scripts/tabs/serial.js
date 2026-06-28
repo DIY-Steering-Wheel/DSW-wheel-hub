@@ -25,10 +25,14 @@
 
   function addItem(wrap, title, meta) {
     var item = document.createElement("div");
-    item.className = "list-item";
-    item.appendChild(document.createTextNode(title));
+    var line = document.createElement("div");
+    item.className = "serial-line";
+    line.className = "serial-line-main";
+    line.appendChild(document.createTextNode(title));
+    item.appendChild(line);
     if (meta) {
       var small = document.createElement("small");
+      small.className = "serial-line-time";
       small.appendChild(document.createTextNode(meta));
       item.appendChild(small);
     }

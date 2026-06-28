@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import copy
+import ctypes
 import json
+import os
 import re
 import subprocess
+import sys
+import tempfile
 import threading
 import time
 from collections import deque
@@ -13,6 +17,9 @@ from typing import Any
 
 import serial
 from serial.tools import list_ports
+
+if sys.platform == "win32":
+    import winreg
 
 
 SERIAL_BAUDRATE = 115200
@@ -199,6 +206,7 @@ class WheelController:
         self.firmware_root = self.firmware_sources[self.firmware_board]["folder"]
         self.avrdude_path = self.app_dir / "avrdude.exe"
         self.avrdude_conf_path = self.app_dir / "avrdude.conf"
+        self.misc_programs_dir = self.app_dir / "FFB_misc_programs"
 
         self._lock = threading.RLock()
         self._serial: serial.Serial | None = None
@@ -452,6 +460,33 @@ class WheelController:
             }
             for flag in flags
         ]
+
+    def _misc_programs(self) -> list[dict[str, str]]:
+        items: list[dict[str, str]] = []
+        if not self.misc_programs_dir.exists():
+            return items
+        labels = {
+            "WheelCheck.exe": "WheelCheck",
+            "DIView.exe": "DIView",
+            "DXTweak2.exe": "DXTweak2",
+            "fedit.exe": "fedit",
+        }
+        descriptions = {
+            "WheelCheck.exe": "Teste de efeitos Force Feedback no Windows.",
+            "DIView.exe": "Monitor eixos, botoes e entradas DirectInput.",
+            "DXTweak2.exe": "Ajuste fino de eixos e calibracao no DirectInput.",
+            "fedit.exe": "Editor de efeitos e parametros DirectInput.",
+        }
+        for path in sorted(self.misc_programs_dir.glob("*.exe")):
+            items.append(
+                {
+                    "file": path.name,
+                    "title": labels.get(path.name, path.stem),
+                    "description": descriptions.get(path.name, "Ferramenta auxiliar do ecossistema FFB."),
+                    "path": str(path),
+                }
+            )
+        return items
 
     def _reload_firmware_catalog(self) -> None:
         self._set_firmware_root()
@@ -1577,8 +1612,19 @@ class WheelController:
                     "firmware_feature_options": self.firmware_feature_options,
                     "output_frequency_options": OUTPUT_FREQUENCY_OPTIONS,
                     "firmware_board": self._firmware_board_payload(),
+                    "misc_programs": self._misc_programs(),
                 }
             )
+
+    def launch_misc_program(self, file_name: str) -> dict[str, Any]:
+        target = self.misc_programs_dir / Path(file_name).name
+        if not target.exists() or target.suffix.lower() != ".exe":
+            return {"ok": False, "message": "Ferramenta auxiliar nao encontrada."}
+        try:
+            os.startfile(str(target))
+            return {"ok": True, "message": f"Abrindo {target.stem}."}
+        except OSError as exc:
+            return {"ok": False, "message": f"Falha ao abrir {target.name}: {exc}"}
 
 
 class WebApi:
@@ -1677,6 +1723,10 @@ class WebApi:
 
     def set_firmware_board(self, board: str) -> dict[str, Any]:
         result = self.controller.set_firmware_board(board)
+        return {**result, "data": self.controller.get_snapshot()}
+
+    def launch_misc_program(self, file_name: str) -> dict[str, Any]:
+        result = self.controller.launch_misc_program(file_name)
         return {**result, "data": self.controller.get_snapshot()}
 
     def capture_bootloader_baseline(self) -> dict[str, Any]:

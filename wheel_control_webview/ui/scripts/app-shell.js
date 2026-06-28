@@ -164,7 +164,6 @@
   }
 
   function renderPortSelects(snapshot) {
-    renderPortSelect("connectionPortSelect", snapshot.ports, snapshot.connection.port);
     renderPortSelect("dockPortSelect", snapshot.ports, snapshot.connection.port);
   }
 
@@ -230,14 +229,6 @@
 
   function selectedProfileFile() {
     return app.state.profileSelection || "";
-  }
-
-  function syncPortSelects(sourceId, targetId) {
-    var source = byId(sourceId);
-    var target = byId(targetId);
-    if (source && target) {
-      target.value = source.value;
-    }
   }
 
   function feedback(message, kind) {
@@ -417,18 +408,23 @@
 
   function renderFooterLocks(snapshot) {
     var hasProfiles = snapshot.profiles && snapshot.profiles.length;
-    setButtonState("dockConnect", !!byId("dockPortSelect").value && !snapshot.connected);
-    setButtonState("dockDisconnect", snapshot.connected);
+    setButtonState("dockConnectToggle", !!byId("dockPortSelect").value || snapshot.connected);
     setButtonState("dockSaveEeprom", snapshot.connected && snapshot.capabilities && snapshot.capabilities.supports_save);
     setButtonState("dockProfileEdit", !!hasProfiles || snapshot.connected);
+    byId("dockConnectToggle").textContent = snapshot.connected ? "Desconectar" : "Conectar";
   }
 
   function renderFirmwareFeatureFilters() {
     var wrap = byId("firmwareFeatureFilters");
     var options = app.state.staticData.firmware_feature_options || [];
+    var existing = document.querySelectorAll(".firmware-filter");
     var index;
     if (!wrap) {
       return;
+    }
+
+    for (index = 0; index < existing.length; index += 1) {
+      app.state.firmwareFilterState[existing[index].value] = existing[index].checked;
     }
 
     clearChildren(wrap);
@@ -446,6 +442,9 @@
       item.appendChild(checkbox);
       item.appendChild(span);
       wrap.appendChild(item);
+      checkbox.onchange = function () {
+        app.state.firmwareFilterState[this.value] = this.checked;
+      };
     }
   }
 
@@ -718,9 +717,11 @@
     setText("profileOptionsCurrentName", selectedProfile ? selectedProfile.name : "Nenhum perfil selecionado", "Nenhum perfil selecionado");
     setText(
       "profileOptionsHint",
-      selectedProfile ? "Use a engrenagem para renomear, sobrescrever ou excluir o perfil selecionado." : "Sem perfil selecionado. Se a base estiver conectada, voce pode criar um novo perfil a partir da configuracao atual.",
+      selectedProfile ? "Ferramentas no topo; selecione outro perfil pela lista ao lado quando quiser trocar o alvo." : "Sem perfil selecionado. Se a base estiver conectada, voce pode criar um novo perfil a partir da configuracao atual.",
       ""
     );
+    renderProfileList(snapshot, selected);
+    renderProfileMeta(selectedProfile);
 
     if (selectedProfile) {
       idleSet("profileRenameName", selectedProfile.name);
@@ -736,6 +737,72 @@
     setButtonState("profileOptionRename", hasSelectedProfile());
     setButtonState("profileOptionDelete", hasSelectedProfile());
     setButtonState("profileOptionOpenJson", hasSelectedProfile());
+  }
+
+  function renderProfileList(snapshot, selected) {
+    var wrap = byId("profileList");
+    var index;
+    if (!wrap) {
+      return;
+    }
+
+    clearChildren(wrap);
+    if (!snapshot.profiles.length) {
+      var empty = document.createElement("div");
+      empty.className = "note-panel";
+      empty.textContent = "Nenhum perfil salvo ainda.";
+      wrap.appendChild(empty);
+      return;
+    }
+
+    for (index = 0; index < snapshot.profiles.length; index += 1) {
+      wrap.appendChild(buildProfileListItem(snapshot.profiles[index], snapshot.profiles[index].file === selected));
+    }
+  }
+
+  function buildProfileListItem(profile, active) {
+    var button = document.createElement("button");
+    var title = document.createElement("strong");
+    var meta = document.createElement("small");
+    button.type = "button";
+    button.className = "profile-list-item" + (active ? " active" : "");
+    button.setAttribute("data-profile-file", profile.file);
+    title.textContent = profile.name;
+    meta.textContent = (profile.firmware || "sem firmware marcado") + (profile.created_at ? " - " + profile.created_at : "");
+    button.appendChild(title);
+    button.appendChild(meta);
+    button.onclick = function () {
+      app.state.profileSelection = profile.file;
+      byId("dockProfileSelect").value = profile.file;
+      fillProfileOptions(app.state.snapshot || { connected: false, profiles: [] });
+    };
+    return button;
+  }
+
+  function renderProfileMeta(profile) {
+    var wrap = byId("profileMeta");
+    var items = [];
+    if (!wrap) {
+      return;
+    }
+    clearChildren(wrap);
+    if (!profile) {
+      wrap.appendChild(buildMetaNote("Selecione um perfil para ver os detalhes aqui."));
+      return;
+    }
+    items.push("Arquivo: " + profile.file);
+    items.push("Firmware: " + text(profile.firmware, "nao informado"));
+    items.push("Criado em: " + text(profile.created_at, "nao informado"));
+    items.forEach(function (item) {
+      wrap.appendChild(buildMetaNote(item));
+    });
+  }
+
+  function buildMetaNote(message) {
+    var note = document.createElement("div");
+    note.className = "note";
+    note.textContent = message;
+    return note;
   }
 
   function openProfileOptionsModal() {
@@ -948,6 +1015,11 @@
       renderFirmwareDescription(app.state.snapshot || { flash_state: {} }, findFirmwareRecord(this.value));
       renderFirmwareWizard(app.state.snapshot || { flash_state: {} });
     };
+    byId("firmwareFeaturesInfo").onclick = function () {
+      renderFirmwareFeatureInfo();
+      getModal("firmwareFeatureInfoModal").show();
+    };
+    byId("firmwareExplainInput").oninput = renderFirmwareFeatureInfo;
 
     byId("firmwareBoardSelect").onchange = function () {
       app.state.firmwareMatches = [];
@@ -981,17 +1053,17 @@
       callApi("refresh_ports");
     };
 
-    byId("dockConnect").onclick = function () {
+    byId("dockConnectToggle").onclick = function () {
+      if (app.state.snapshot && app.state.snapshot.connected) {
+        callApi("disconnect").then(function () {
+          activateTab("connection");
+        });
+        return;
+      }
       callApi("connect", [byId("dockPortSelect").value]).then(function (result) {
         if (result && result.ok) {
           activateTab("wheel");
         }
-      });
-    };
-
-    byId("dockDisconnect").onclick = function () {
-      callApi("disconnect").then(function () {
-        activateTab("connection");
       });
     };
 
@@ -1002,7 +1074,6 @@
     byId("dockProfileEdit").onclick = openProfileOptionsModal;
 
     byId("dockPortSelect").onchange = function () {
-      syncPortSelects("dockPortSelect", "connectionPortSelect");
       renderFooterLocks(app.state.snapshot || { connected: false, capabilities: {}, profiles: [] });
     };
 
@@ -1013,6 +1084,45 @@
         callApi("apply_profile", [this.value]);
       }
     };
+  }
+
+  function renderFirmwareFeatureInfo() {
+    var wrap = byId("firmwareFeatureInfoList");
+    var output = byId("firmwareExplainResult");
+    var options = app.state.staticData.firmware_feature_options || [];
+    var catalog = app.state.staticData.firmware_catalog || [];
+    var query = (byId("firmwareExplainInput").value || "").toLowerCase().replace(/[^0-9a-z]/g, "");
+    var matchedRecord = null;
+    var flags = [];
+
+    app.clearChildren(wrap);
+    if (query) {
+      matchedRecord = catalog.find(function (item) {
+        return item.code === query || item.name.toLowerCase() === query || ("fw-v" + item.code) === query;
+      }) || null;
+      if (matchedRecord) {
+        flags = matchedRecord.flags || [];
+        output.textContent = (matchedRecord.description_pt || matchedRecord.description_en || "Firmware encontrado.") + " Pasta: " + matchedRecord.folder + ".";
+      } else {
+        flags = query.replace(/^\d+/, "").split("").filter(function (flag, index, array) {
+          return flag && array.indexOf(flag) === index;
+        });
+        output.textContent = flags.length ? "Interpretando as flags digitadas." : "Digite um codigo de firmware ou uma sequencia de flags para ver a traducao.";
+      }
+    } else {
+      output.textContent = "Digite um codigo de firmware ou uma sequencia de flags para ver a traducao.";
+      flags = options.map(function (item) { return item.flag; });
+    }
+
+    options.forEach(function (item) {
+      if (flags.indexOf(item.flag) === -1 && query) {
+        return;
+      }
+      var note = document.createElement("div");
+      note.className = "note";
+      note.textContent = item.title + ": " + item.description;
+      wrap.appendChild(note);
+    });
   }
 
   function registerTab(name, module) {
@@ -1068,7 +1178,7 @@
             feedback(String(error), "error");
           }
         );
-      }, 800);
+      }, 1400);
     });
   }
 
