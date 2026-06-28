@@ -28,6 +28,18 @@ TAB_ORDER = [
 
 def build_ui(root: Path) -> Path:
     ui_root = root / "interface grafica" / "ui"
+    # When frozen by cx_Freeze the layout may place resource files next to the
+    # executable instead of under the package lib folder. Try a few fallbacks
+    # so the app can find the UI files both in source and in the frozen bundle.
+    if not ui_root.exists():
+        exe_parent = Path(sys.executable).resolve().parent
+        alt1 = exe_parent / "interface grafica" / "ui"
+        alt2 = exe_parent.parent / "interface grafica" / "ui"
+        if alt1.exists():
+            ui_root = alt1
+        elif alt2.exists():
+            ui_root = alt2
+
     template = (ui_root / "template.html").read_text(encoding="utf-8")
 
     for tab_name in TAB_ORDER:

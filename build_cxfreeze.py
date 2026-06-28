@@ -41,10 +41,18 @@ for optional_dir in [ROOT / "resources", APP_DIR / "wirings", ROOT / "wirings"]:
         if not any(existing[1] == target_name for existing in include_files):
             include_files.append((str(optional_dir), target_name))
 
+# Also include top-level firmware folders if present (some repo layouts place
+# hex files next to the project root rather than inside the UI folder).
+for extra in [ROOT / "leonardo hex", ROOT / "promicro hex", ROOT / "FFB_misc_programs"]:
+    if extra.exists():
+        tgt = f"interface grafica/{extra.name}"
+        if not any(existing[1] == tgt for existing in include_files):
+            include_files.append((str(extra), tgt))
+
 
 build_exe_options = {
     "packages": ["serial", "webview"],
-    "includes": ["ctypes", "json", "tempfile", "webview.platforms", "webview.platforms.edgechromium"],
+    "includes": ["ctypes", "json", "tempfile", "webview.platforms", "webview.platforms.edgechromium", "backend"],
     "include_files": include_files,
     "include_msvcr": True,
     "excludes": ["tkinter", "unittest"],
@@ -52,6 +60,10 @@ build_exe_options = {
 }
 
 base = "Win32GUI" if sys.platform == "win32" else None
+
+# Ensure the application package directory is on sys.path so cx_Freeze
+# can find local modules like `backend` during module analysis.
+sys.path.insert(0, str(APP_DIR))
 
 setup(
     name="DSW Wheel Hub",

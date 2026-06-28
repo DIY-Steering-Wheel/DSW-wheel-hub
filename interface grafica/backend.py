@@ -233,7 +233,24 @@ def _frequency_option(index: int) -> dict[str, Any]:
 class WheelController:
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.app_dir = root / "interface grafica"
+        # Resolve application directory. When running from source the UI
+        # lives under <root>/interface grafica. When frozen by cx_Freeze the
+        # resources are packaged next to the executable; prefer that location
+        # if it exists.
+        candidate = root / "interface grafica"
+        if candidate.exists():
+            self.app_dir = candidate
+        else:
+            exe_parent = Path(sys.executable).resolve().parent
+            alt1 = exe_parent / "interface grafica"
+            alt2 = exe_parent.parent / "interface grafica"
+            if alt1.exists():
+                self.app_dir = alt1
+            elif alt2.exists():
+                self.app_dir = alt2
+            else:
+                # Fallback to candidate even if missing; code will handle missing files
+                self.app_dir = candidate
         self.profile_dir = self.app_dir / "profiles"
         self.profile_dir.mkdir(parents=True, exist_ok=True)
         self.firmware_sources = {
@@ -1188,7 +1205,15 @@ class WheelController:
                     "Select-Object -First 1 Name,PNPDeviceID | ConvertTo-Json -Compress"
                 ),
             ]
-            completed = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
+            creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+            completed = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=3,
+                check=False,
+                creationflags=creationflags,
+            )
             if completed.returncode != 0 or not (completed.stdout or "").strip():
                 return {}
             payload = json.loads(completed.stdout)
@@ -1966,6 +1991,7 @@ class WheelController:
             self.flash_state["wizard_stage"] = "flashing"
 
         try:
+            creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
             completed = subprocess.run(
                 command,
                 cwd=str(self.app_dir),
@@ -1973,6 +1999,7 @@ class WheelController:
                 text=True,
                 timeout=AVRDUDE_TIMEOUT,
                 check=False,
+                creationflags=creationflags,
             )
             log = (completed.stdout or "") + ("\n" if completed.stdout and completed.stderr else "") + (completed.stderr or "")
             with self._lock:
