@@ -40,6 +40,11 @@
     app.idleCheck("shifterCfgInvertY", !!shifter.cfg_flags.invert_y);
     app.setText("shifterLiveValue", snapshot.shifter.live.x + " / " + snapshot.shifter.live.y, "");
     app.setText("shifterSlotValue", slot.label, "");
+    app.setText(
+      "shifterReverseHint",
+      "Reverse usa a entrada " + window.BRWheelApp.text(snapshot.capabilities.reverse_button_port, "button0") + ". Ligue o botao de reverse nessa porta; quando ativado, a firmware troca a ultima faixa da grade por marcha a re.",
+      ""
+    );
 
     renderVisual(shifter, snapshot.shifter.live, slot.key);
     renderDraftMeta(shifter);
@@ -135,6 +140,7 @@
     positionMarker(live);
     window.BRWheelApp.setText("shifterSlotRightTop", shifter.cfg_flags.gear8_mode ? "7" : "R", "");
     window.BRWheelApp.setText("shifterSlotRightBottom", shifter.cfg_flags.gear8_mode ? "8" : "R", "");
+    window.BRWheelApp.setText("shifterNeutralLabel", activeKey, "");
     highlightActiveGear(activeKey);
   }
 
@@ -152,7 +158,8 @@
 
   function positionBoundary(id, axis, value) {
     var element = window.BRWheelApp.byId(id);
-    var pct = Math.max(0, Math.min(1023, Number(value || 0))) / 1023 * 100;
+    var maxValue = currentAnalogLimit();
+    var pct = Math.max(0, Math.min(maxValue, Number(value || 0))) / maxValue * 100;
     if (axis === "x") {
       element.style.left = pct + "%";
     } else {
@@ -162,8 +169,9 @@
 
   function positionMarker(live) {
     var marker = window.BRWheelApp.byId("shifterLiveMarker");
-    marker.style.left = (Math.max(0, Math.min(1023, Number(live.x || 0))) / 1023 * 100) + "%";
-    marker.style.top = (Math.max(0, Math.min(1023, Number(live.y || 0))) / 1023 * 100) + "%";
+    var maxValue = currentAnalogLimit();
+    marker.style.left = (Math.max(0, Math.min(maxValue, Number(live.x || 0))) / maxValue * 100) + "%";
+    marker.style.top = (Math.max(0, Math.min(maxValue, Number(live.y || 0))) / maxValue * 100) + "%";
   }
 
   function highlightActiveGear(activeKey) {
@@ -200,9 +208,9 @@
       grid = window.BRWheelApp.byId("shifterVisualGrid");
       rect = grid.getBoundingClientRect();
       if (module.state.drag.axis === "x") {
-        value = Math.round(((event.clientX - rect.left) / rect.width) * 1023);
+        value = Math.round(((event.clientX - rect.left) / rect.width) * currentAnalogLimit());
       } else {
-        value = Math.round(((event.clientY - rect.top) / rect.height) * 1023);
+        value = Math.round(((event.clientY - rect.top) / rect.height) * currentAnalogLimit());
       }
       setBoundaryValue(module.state.drag.axis, module.state.drag.index, value);
     });
@@ -286,11 +294,16 @@
   }
 
   function clamp(value) {
-    return Math.max(0, Math.min(1023, Number(value || 0)));
+    return Math.max(0, Math.min(currentAnalogLimit(), Number(value || 0)));
   }
 
   function sortNumber(a, b) {
     return a - b;
+  }
+
+  function currentAnalogLimit() {
+    var snapshot = window.BRWheelApp.state.snapshot;
+    return snapshot && snapshot.capabilities && snapshot.capabilities.analog_resolution ? Number(snapshot.capabilities.analog_resolution) : 1023;
   }
 
   window.BRWheelApp.registerTab("shifter", module);

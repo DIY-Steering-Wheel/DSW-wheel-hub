@@ -93,6 +93,54 @@ OUTPUT_FREQUENCY_OPTIONS = [
     {"index": 12, "pwm_hz": 244, "pwm_label": "244 Hz", "rcm_hz": 31, "rcm_label": "31 Hz", "fast_resolution": 65535, "phase_resolution": 32767},
 ]
 
+if sys.platform == "win32":
+    class JOYCAPSW(ctypes.Structure):
+        _fields_ = [
+            ("wMid", ctypes.c_uint16),
+            ("wPid", ctypes.c_uint16),
+            ("szPname", ctypes.c_wchar * 32),
+            ("wXmin", ctypes.c_uint32),
+            ("wXmax", ctypes.c_uint32),
+            ("wYmin", ctypes.c_uint32),
+            ("wYmax", ctypes.c_uint32),
+            ("wZmin", ctypes.c_uint32),
+            ("wZmax", ctypes.c_uint32),
+            ("wNumButtons", ctypes.c_uint32),
+            ("wPeriodMin", ctypes.c_uint32),
+            ("wPeriodMax", ctypes.c_uint32),
+            ("wRmin", ctypes.c_uint32),
+            ("wRmax", ctypes.c_uint32),
+            ("wUmin", ctypes.c_uint32),
+            ("wUmax", ctypes.c_uint32),
+            ("wVmin", ctypes.c_uint32),
+            ("wVmax", ctypes.c_uint32),
+            ("wCaps", ctypes.c_uint32),
+            ("wMaxAxes", ctypes.c_uint32),
+            ("wNumAxes", ctypes.c_uint32),
+            ("wMaxButtons", ctypes.c_uint32),
+            ("szRegKey", ctypes.c_wchar * 32),
+            ("szOEMVxD", ctypes.c_wchar * 260),
+        ]
+
+    class JOYINFOEX(ctypes.Structure):
+        _fields_ = [
+            ("dwSize", ctypes.c_uint32),
+            ("dwFlags", ctypes.c_uint32),
+            ("dwXpos", ctypes.c_uint32),
+            ("dwYpos", ctypes.c_uint32),
+            ("dwZpos", ctypes.c_uint32),
+            ("dwRpos", ctypes.c_uint32),
+            ("dwUpos", ctypes.c_uint32),
+            ("dwVpos", ctypes.c_uint32),
+            ("dwButtons", ctypes.c_uint32),
+            ("dwButtonNumber", ctypes.c_uint32),
+            ("dwPOV", ctypes.c_uint32),
+            ("dwReserved1", ctypes.c_uint32),
+            ("dwReserved2", ctypes.c_uint32),
+        ]
+
+    JOY_RETURNALL = 0x00FF
+
 FFB_COMMANDS = {
     "general_gain": "FG",
     "constant_gain": "FC",
@@ -216,6 +264,8 @@ class WheelController:
         self._last_port_scan = 0.0
         self._last_state_poll = 0.0
         self._last_shifter_poll = 0.0
+        self._runtime_pause_until = 0.0
+        self._winmm = ctypes.WinDLL("winmm", use_last_error=True) if sys.platform == "win32" else None
 
         self.connection: dict[str, Any] = {
             "connected": False,
@@ -261,6 +311,7 @@ class WheelController:
             "controller_state": None,
             "controller_state_label": "Desconectado",
         }
+        self.device_monitor: dict[str, Any] = self._empty_device_monitor()
         self.serial_stats: dict[str, Any] = {
             "baudrate": SERIAL_BAUDRATE,
             "tx_bytes_total": 0,
@@ -315,8 +366,29 @@ class WheelController:
             "has_averaging": False,
             "has_tca9548": False,
             "has_split_axis": False,
+            "analog_resolution": 1023,
+            "analog_resolution_label": "ADC interno 10-bit (0-1023)",
+            "reverse_button_port": "D4 / button0",
+            "output_resolution_hint": "Resolucao interna da saida FFB em passos PWM/DAC.",
             "button_capacity": "Dinamico",
             "flag_titles": [],
+        }
+
+    def _empty_device_monitor(self) -> dict[str, Any]:
+        return {
+            "available": False,
+            "connected": False,
+            "matched": False,
+            "match_method": "",
+            "device_name": "",
+            "instance_id": "",
+            "vid": None,
+            "pid": None,
+            "wheel_percent": 50,
+            "axes": [],
+            "buttons_pressed": [],
+            "button_count": 0,
+            "status": "Aguardando conexao.",
         }
 
     def _default_settings(self) -> dict[str, Any]:
@@ -340,7 +412,10 @@ class WheelController:
             "desktop_effects": 0,
             "desktop": desktop,
             "output_resolution": 500,
+            "output_resolution_label": "500 passos",
+            "output_resolution_hint": "Quantidade de passos da saida FFB. Em PWM isso reflete o TOP atual; em DAC reflete o modo/escala de saida.",
             "encoder_cpr": 2400,
+            "encoder_ppr": 600,
             "pwm_state": 9,
             "output": output,
         }
@@ -349,6 +424,8 @@ class WheelController:
         while not self._stop_event.wait(BACKGROUND_TICK_SECONDS):
             try:
                 self.refresh_ports(force=False)
+                if time.time() < self._runtime_pause_until:
+                    continue
                 if self._refresh_requested.is_set():
                     self._refresh_requested.clear()
                     if self._is_connected():
@@ -359,6 +436,7 @@ class WheelController:
                     with self._lock:
                         self.diagnostics["controller_state"] = None
                         self.diagnostics["controller_state_label"] = "Desconectado"
+                        self.device_monitor = self._empty_device_monitor()
                         self.serial_stats["tx_usage_percent"] = 0.0
                         self.serial_stats["rx_usage_percent"] = 0.0
             except Exception as exc:
@@ -367,6 +445,37 @@ class WheelController:
 
     def request_snapshot_refresh(self) -> None:
         self._refresh_requested.set()
+
+    def _pause_runtime_poll(self, seconds: float = 0.6) -> None:
+        self._runtime_pause_until = max(self._runtime_pause_until, time.time() + max(0.0, seconds))
+
+    def _analog_resolution_limit(self, caps: dict[str, Any] | None = None) -> int:
+        caps = caps or self.capabilities
+        if caps.get("has_averaging"):
+            return 4095
+        if caps.get("has_ads1015"):
+            return 2047
+        return 1023
+
+    def _analog_resolution_label(self, caps: dict[str, Any] | None = None) -> str:
+        caps = caps or self.capabilities
+        if caps.get("has_averaging"):
+            return "Media analogica em 12-bit (0-4095)"
+        if caps.get("has_ads1015"):
+            return "ADS1015 em 11-bit util (0-2047)"
+        return "ADC interno 10-bit (0-1023)"
+
+    def _reverse_button_port_label(self, caps: dict[str, Any] | None = None) -> str:
+        caps = caps or self.capabilities
+        if caps.get("has_load_cell"):
+            return "A3 / button0"
+        return "D4 / button0"
+
+    def _output_resolution_hint(self) -> str:
+        return "Resolucao interna da saida FFB. Em PWM, corresponde ao TOP atual e define quantos passos a saida tem; em DAC, reflete a escala efetiva do modo selecionado."
+
+    def _encoder_ppr_from_cpr(self, cpr: int) -> int:
+        return max(1, round(max(1, cpr) / 4))
 
     def _set_firmware_root(self) -> None:
         source = self.firmware_sources.get(self.firmware_board, self.firmware_sources["promicro"])
@@ -674,6 +783,7 @@ class WheelController:
             self._close_serial()
             self.diagnostics["controller_state"] = None
             self.diagnostics["controller_state_label"] = "Desconectado"
+            self.device_monitor = self._empty_device_monitor()
             self.serial_stats["tx_usage_percent"] = 0.0
             self.serial_stats["rx_usage_percent"] = 0.0
             self.flash_state["bootloader_port"] = ""
@@ -767,6 +877,7 @@ class WheelController:
                     self._clear_error()
                     self._apply_firmware_version(version)
                     self.load_device_snapshot()
+                    self._update_device_monitor(force=True)
                     self.request_snapshot_refresh()
                     return {"ok": True, "message": f"Conectado em {candidate}."}
                 except (serial.SerialException, OSError) as exc:
@@ -922,6 +1033,10 @@ class WheelController:
         caps["has_averaging"] = "i" in flags
         caps["has_tca9548"] = "u" in flags
         caps["has_split_axis"] = "k" in flags
+        caps["analog_resolution"] = self._analog_resolution_limit(caps)
+        caps["analog_resolution_label"] = self._analog_resolution_label(caps)
+        caps["reverse_button_port"] = self._reverse_button_port_label(caps)
+        caps["output_resolution_hint"] = self._output_resolution_hint()
         caps["flag_titles"] = [item["title"] for item in flag_details]
 
         if "r" in flags and "n" in flags and "f" in flags:
@@ -937,6 +1052,7 @@ class WheelController:
         self.shifter["available"] = caps["supports_xy_shifter"]
         self.manual_calibration["available"] = caps["supports_manual_calibration"]
         self.settings["brake_pressure_label"] = "Load cell / brake pressure" if caps["has_load_cell"] else "PWM balance"
+        self.settings["output_resolution_hint"] = caps["output_resolution_hint"]
 
         notes = [
             f"Firmware {version or 'desconhecida'} detectada.",
@@ -977,7 +1093,10 @@ class WheelController:
                 "desktop_effects": values[12],
                 "desktop": self._decode_desktop_effects(values[12], self.capabilities["supports_axis_select"]),
                 "output_resolution": values[13],
+                "output_resolution_label": f"{output_resolution} passos",
+                "output_resolution_hint": self._output_resolution_hint(),
                 "encoder_cpr": values[14],
+                "encoder_ppr": self._encoder_ppr_from_cpr(values[14]),
                 "pwm_state": values[15],
                 "output": self._decode_output_state(values[15], self.capabilities["output"] == "DAC analogico"),
             }
@@ -1002,6 +1121,128 @@ class WheelController:
                 if len(parts) >= 2:
                     self.shifter["live"] = {"x": _safe_int(parts[0]), "y": _safe_int(parts[1])}
             self._last_shifter_poll = now
+
+        self._update_device_monitor()
+
+    def _normalize_axis_value(self, value: int, minimum: int, maximum: int) -> int:
+        span = max(1, maximum - minimum)
+        return max(0, min(100, round(((value - minimum) / span) * 100)))
+
+    def _find_windows_pnp_match(self) -> dict[str, Any]:
+        if sys.platform != "win32" or not self.connection.get("vid") or not self.connection.get("pid"):
+            return {}
+        needle = f"VID_{self.connection['vid']:04X}&PID_{self.connection['pid']:04X}"
+        try:
+            cmd = [
+                "powershell",
+                "-NoProfile",
+                "-Command",
+                (
+                    "Get-CimInstance Win32_PnPEntity | "
+                    f"Where-Object {{ $_.PNPDeviceID -match '{needle}' }} | "
+                    "Select-Object -First 1 Name,PNPDeviceID | ConvertTo-Json -Compress"
+                ),
+            ]
+            completed = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
+            if completed.returncode != 0 or not (completed.stdout or "").strip():
+                return {}
+            payload = json.loads(completed.stdout)
+            return {
+                "name": payload.get("Name", "") if isinstance(payload, dict) else "",
+                "instance_id": payload.get("PNPDeviceID", "") if isinstance(payload, dict) else "",
+            }
+        except (OSError, subprocess.SubprocessError, json.JSONDecodeError):
+            return {}
+
+    def _update_device_monitor(self, force: bool = False) -> None:
+        if not self._is_connected():
+            self.device_monitor = self._empty_device_monitor()
+            return
+        if sys.platform != "win32" or self._winmm is None:
+            self.device_monitor = {
+                **self._empty_device_monitor(),
+                "connected": True,
+                "status": "Monitor do joystick em Windows indisponivel nesta plataforma.",
+            }
+            return
+
+        expected_vid = self.connection.get("vid")
+        expected_pid = self.connection.get("pid")
+        product_text = (self.connection.get("product") or "").lower()
+        pnp_info = self._find_windows_pnp_match() if force or not self.device_monitor.get("instance_id") else {
+            "name": self.device_monitor.get("device_name", ""),
+            "instance_id": self.device_monitor.get("instance_id", ""),
+        }
+        best = None
+        best_score = -1
+
+        for joy_id in range(16):
+            info = JOYINFOEX()
+            info.dwSize = ctypes.sizeof(JOYINFOEX)
+            info.dwFlags = JOY_RETURNALL
+            if self._winmm.joyGetPosEx(joy_id, ctypes.byref(info)) != 0:
+                continue
+
+            caps = JOYCAPSW()
+            if self._winmm.joyGetDevCapsW(joy_id, ctypes.byref(caps), ctypes.sizeof(JOYCAPSW)) != 0:
+                continue
+
+            name = str(caps.szPname or "").strip("\x00")
+            reg_key = str(caps.szRegKey or "").strip("\x00")
+            score = 0
+            if expected_vid and expected_pid:
+                needle = f"VID_{expected_vid:04X}&PID_{expected_pid:04X}".lower()
+                if needle in reg_key.lower() or needle in name.lower():
+                    score += 6
+            if product_text and product_text in name.lower():
+                score += 4
+            if pnp_info.get("name") and pnp_info["name"].lower() in name.lower():
+                score += 3
+            if best is None:
+                score += 1
+
+            if score <= best_score:
+                continue
+
+            axes = [
+                {"id": "x", "label": "Volante X", "value": self._normalize_axis_value(info.dwXpos, caps.wXmin, caps.wXmax)},
+                {"id": "y", "label": "Pedal Y", "value": self._normalize_axis_value(info.dwYpos, caps.wYmin, caps.wYmax)},
+                {"id": "z", "label": "Pedal Z", "value": self._normalize_axis_value(info.dwZpos, caps.wZmin, caps.wZmax)},
+                {"id": "rx", "label": "RX", "value": self._normalize_axis_value(info.dwRpos, caps.wRmin, caps.wRmax)},
+                {"id": "ry", "label": "RY", "value": self._normalize_axis_value(info.dwUpos, caps.wUmin, caps.wUmax)},
+                {"id": "rz", "label": "RZ", "value": self._normalize_axis_value(info.dwVpos, caps.wVmin, caps.wVmax)},
+            ]
+            buttons_pressed = [index + 1 for index in range(min(32, int(caps.wNumButtons or 0))) if info.dwButtons & (1 << index)]
+            best = {
+                "available": True,
+                "connected": True,
+                "matched": score >= 4,
+                "match_method": "VID/PID" if score >= 6 else ("nome" if score >= 4 else "fallback"),
+                "device_name": pnp_info.get("name") or name,
+                "instance_id": pnp_info.get("instance_id") or reg_key,
+                "vid": expected_vid,
+                "pid": expected_pid,
+                "wheel_percent": axes[0]["value"],
+                "axes": axes,
+                "buttons_pressed": buttons_pressed,
+                "button_count": int(caps.wNumButtons or 0),
+                "status": "Joystick localizado no Windows." if score >= 4 else "Joystick detectado por aproximacao.",
+            }
+            best_score = score
+
+        if best is None:
+            self.device_monitor = {
+                **self._empty_device_monitor(),
+                "connected": True,
+                "vid": expected_vid,
+                "pid": expected_pid,
+                "device_name": pnp_info.get("name", ""),
+                "instance_id": pnp_info.get("instance_id", ""),
+                "status": "Nenhum joystick do Windows respondeu ao monitor em tempo real.",
+            }
+            return
+
+        self.device_monitor = best
 
     def load_device_snapshot(self) -> dict[str, Any]:
         version_result = self._send_command("V")
@@ -1056,76 +1297,188 @@ class WheelController:
                         }
                     )
 
+        self._update_device_monitor(force=True)
         return {"ok": True, "message": "Snapshot carregado."}
 
-    def update_basic_settings(self, payload: dict[str, Any]) -> dict[str, Any]:
-        commands: list[str] = []
-        if payload.get("rotation_deg") is not None:
-            commands.append(f"G {_safe_int(payload['rotation_deg'])}")
-        if payload.get("encoder_cpr") is not None:
-            commands.append(f"O {_safe_int(payload['encoder_cpr'])}")
-        if payload.get("brake_pressure") is not None:
-            commands.append(f"B {_safe_int(payload['brake_pressure'])}")
+    def _validated_int(self, value: Any, minimum: int, maximum: int, field: str) -> int:
+        try:
+            number = int(value)
+        except (TypeError, ValueError):
+            raise ValueError(f"{field} precisa ser um numero inteiro valido.")
+        if number < minimum or number > maximum:
+            raise ValueError(f"{field} deve ficar entre {minimum} e {maximum}.")
+        return number
 
+    def _validate_basic_payload(self, payload: dict[str, Any]) -> dict[str, int]:
+        validated: dict[str, int] = {}
+        if payload.get("rotation_deg") is not None:
+            validated["rotation_deg"] = self._validated_int(payload.get("rotation_deg"), 30, 1244, "Rotacao")
+
+        if payload.get("encoder_ppr") is not None and payload.get("encoder_cpr") is None:
+            payload["encoder_cpr"] = self._validated_int(payload.get("encoder_ppr"), 1, 150000, "Encoder PPR") * 4
+
+        if payload.get("encoder_cpr") is not None:
+            validated["encoder_cpr"] = self._validated_int(payload.get("encoder_cpr"), 4, 600000, "Encoder CPR")
+
+        if payload.get("brake_pressure") is not None:
+            validated["brake_pressure"] = self._validated_int(payload.get("brake_pressure"), 1, 255, self.settings.get("brake_pressure_label", "Brake scaling"))
+
+        return validated
+
+    def _validate_ffb_payload(self, payload: dict[str, Any]) -> dict[str, int]:
+        validated: dict[str, int] = {}
+        for key in FFB_COMMANDS:
+            if payload.get(key) is None:
+                continue
+            validated[key] = self._validated_int(payload.get(key), 0, 200, key)
+        return validated
+
+    def _validate_desktop_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        validated = {
+            "auto_center": bool(payload.get("auto_center")),
+            "damper": bool(payload.get("damper")),
+            "inertia": bool(payload.get("inertia")),
+            "friction": bool(payload.get("friction")),
+            "monitor": bool(payload.get("monitor")),
+            "axis_index": 0,
+        }
+        if self.capabilities["supports_axis_select"]:
+            validated["axis_index"] = self._validated_int(payload.get("axis_index", 0), 0, 4, "Eixo xFFB")
+        return validated
+
+    def _validate_output_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        if not self.capabilities["supports_output_setup"]:
+            raise ValueError("Este firmware nao permite alterar a saida em runtime.")
+
+        uses_dac = self.capabilities["output"] == "DAC analogico"
+        if uses_dac:
+            return {
+                "uses_dac": True,
+                "enabled": bool(payload.get("enabled")),
+                "mode_code": self._validated_int(payload.get("mode_code", 0), 0, 2, "Modo DAC"),
+            }
+
+        frequency_index = self._validated_int(payload.get("frequency_index", 3), 0, len(OUTPUT_FREQUENCY_OPTIONS) - 1, "Indice de frequencia")
+        mode = str(payload.get("mode_label", "pwm+-"))
+        if mode not in {"pwm+-", "pwm0-50-100", "pwm+dir", "rcm"}:
+            raise ValueError("Modo de saida PWM invalido.")
+        if mode == "rcm" and OUTPUT_FREQUENCY_OPTIONS[frequency_index]["rcm_hz"] is None:
+            raise ValueError("O indice de frequencia selecionado nao suporta modo RCM.")
+        return {
+            "uses_dac": False,
+            "phase_correct": bool(payload.get("phase_correct")),
+            "frequency_index": frequency_index,
+            "mode_label": mode,
+        }
+
+    def _validate_shifter_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        if not self.shifter["available"]:
+            raise ValueError("Firmware atual nao possui XY shifter.")
+        analog_limit = self.capabilities.get("analog_resolution", 1023)
+        values = [self._validated_int(payload.get(f"cal_{index}"), 0, analog_limit, f"Corte do cambio {index}") for index in range(5)]
+        cfg = self._validated_int(payload.get("cfg", 0), 0, 255, "Configuracao do cambio")
+        return {"cal": values, "cfg": cfg}
+
+    def _validate_manual_calibration_payload(self, payload: dict[str, Any]) -> dict[str, int]:
+        if not self.manual_calibration["available"]:
+            raise ValueError("Este build usa autocalibracao.")
+        analog_limit = self.capabilities.get("analog_resolution", 1023)
+        validated: dict[str, int] = {}
+        for key in ["brake_min", "brake_max", "accel_min", "accel_max", "clutch_min", "clutch_max", "hbrake_min", "hbrake_max"]:
+            validated[key] = self._validated_int(payload.get(key), 0, analog_limit, key)
+        for prefix in ["brake", "accel", "clutch", "hbrake"]:
+            if validated[f"{prefix}_min"] > validated[f"{prefix}_max"]:
+                raise ValueError(f"{prefix} minimo nao pode ser maior que o maximo.")
+        return validated
+
+    def update_basic_settings(self, payload: dict[str, Any]) -> dict[str, Any]:
+        try:
+            validated = self._validate_basic_payload(dict(payload or {}))
+        except ValueError as exc:
+            return {"ok": False, "message": str(exc)}
+
+        commands: list[str] = []
+        if validated.get("rotation_deg") is not None:
+            commands.append(f"G {validated['rotation_deg']}")
+        if validated.get("encoder_cpr") is not None:
+            commands.append(f"O {validated['encoder_cpr']}")
+        if validated.get("brake_pressure") is not None:
+            commands.append(f"B {validated['brake_pressure']}")
+
+        self._pause_runtime_poll()
         for command in commands:
             result = self._send_command(command, expect_response=not command.startswith("R"))
             if not result.ok:
                 return {"ok": False, "message": result.message or f"Falha em {command}."}
 
-        self.load_device_snapshot()
+        self.settings.update(validated)
+        if validated.get("encoder_cpr") is not None:
+            self.settings["encoder_ppr"] = self._encoder_ppr_from_cpr(validated["encoder_cpr"])
         return {"ok": True, "message": "Ajustes basicos aplicados."}
 
     def update_ffb_settings(self, payload: dict[str, Any]) -> dict[str, Any]:
+        try:
+            validated = self._validate_ffb_payload(payload or {})
+        except ValueError as exc:
+            return {"ok": False, "message": str(exc)}
+
+        self._pause_runtime_poll()
         for key, command in FFB_COMMANDS.items():
-            if key not in payload or payload.get(key) is None:
+            if key not in validated:
                 continue
-            value = _safe_int(payload[key])
+            value = validated[key]
             result = self._send_command(f"{command} {value}")
             if not result.ok:
                 return {"ok": False, "message": result.message or f"Falha em {command}."}
 
-        self.load_device_snapshot()
+        self.settings.update(validated)
         return {"ok": True, "message": "Ganhos FFB atualizados."}
 
     def update_desktop_effects(self, payload: dict[str, Any]) -> dict[str, Any]:
+        try:
+            validated = self._validate_desktop_payload(payload or {})
+        except ValueError as exc:
+            return {"ok": False, "message": str(exc)}
+
         value = 0
-        if payload.get("auto_center"):
+        if validated.get("auto_center"):
             value |= 1 << 0
-        if payload.get("damper"):
+        if validated.get("damper"):
             value |= 1 << 1
-        if payload.get("inertia"):
+        if validated.get("inertia"):
             value |= 1 << 2
-        if payload.get("friction"):
+        if validated.get("friction"):
             value |= 1 << 3
-        if payload.get("monitor"):
+        if validated.get("monitor"):
             value |= 1 << 4
 
-        axis_index = _safe_int(payload.get("axis_index", 0))
-        axis_index = max(0, min(axis_index, 7))
+        axis_index = validated.get("axis_index", 0)
         value |= axis_index << 5
 
+        self._pause_runtime_poll()
         result = self._send_command(f"E {value}")
         if not result.ok:
             return {"ok": False, "message": result.message or "Falha ao atualizar efeitos de desktop."}
 
-        self.load_device_snapshot()
+        self.settings["desktop_effects"] = value
+        self.settings["desktop"] = self._decode_desktop_effects(value, self.capabilities["supports_axis_select"])
         return {"ok": True, "message": "Efeitos de desktop atualizados."}
 
     def update_output_settings(self, payload: dict[str, Any]) -> dict[str, Any]:
-        if not self.capabilities["supports_output_setup"]:
-            return {"ok": False, "message": "Este build nao permite alterar saida em runtime."}
+        try:
+            validated = self._validate_output_payload(payload or {})
+        except ValueError as exc:
+            return {"ok": False, "message": str(exc)}
 
-        uses_dac = self.capabilities["output"] == "DAC analogico"
+        uses_dac = validated["uses_dac"]
         if uses_dac:
-            enabled = 1 if payload.get("enabled") else 0
-            mode_code = _safe_int(payload.get("mode_code", 0))
-            mode_code = max(0, min(mode_code, 2))
+            enabled = 1 if validated.get("enabled") else 0
+            mode_code = validated["mode_code"]
             value = (enabled << 7) | (mode_code << 5)
         else:
-            phase_correct = 1 if payload.get("phase_correct") else 0
-            frequency_index = _safe_int(payload.get("frequency_index", 3))
-            frequency_index = max(0, min(frequency_index, 12))
-            mode = str(payload.get("mode_label", "pwm+-"))
+            phase_correct = 1 if validated.get("phase_correct") else 0
+            frequency_index = validated["frequency_index"]
+            mode = validated["mode_label"]
             bit1, bit6 = {
                 "pwm+-": (0, 0),
                 "pwm0-50-100": (0, 1),
@@ -1134,37 +1487,52 @@ class WheelController:
             }.get(mode, (0, 0))
             value = phase_correct | (bit1 << 1) | (frequency_index << 2) | (bit6 << 6)
 
+        self._pause_runtime_poll()
         result = self._send_command(f"W {value}")
         if not result.ok:
             return {"ok": False, "message": result.message or "Falha ao atualizar saida FFB."}
 
-        self.load_device_snapshot()
+        self.settings["pwm_state"] = value
+        self.settings["output"] = self._decode_output_state(value, uses_dac)
+        if not uses_dac:
+            self.settings["output_resolution"] = _frequency_option(validated["frequency_index"])["phase_resolution" if validated.get("phase_correct") else "fast_resolution"]
+            self.settings["output_resolution_label"] = f"{self.settings['output_resolution']} passos"
         return {"ok": True, "message": "Configuracao de saida aplicada. Reinicie o Arduino se estiver usando PWM."}
 
     def update_shifter_settings(self, payload: dict[str, Any]) -> dict[str, Any]:
-        if not self.shifter["available"]:
-            return {"ok": False, "message": "Firmware atual nao possui XY shifter."}
+        try:
+            validated = self._validate_shifter_payload(payload or {})
+        except ValueError as exc:
+            return {"ok": False, "message": str(exc)}
 
         commands = []
         for index in range(5):
-            key = f"cal_{index}"
-            if key in payload and payload.get(key) is not None:
-                commands.append(f"H{chr(ord('A') + index)} {_safe_int(payload[key])}")
+            commands.append(f"H{chr(ord('A') + index)} {validated['cal'][index]}")
 
-        if payload.get("cfg") is not None:
-            commands.append(f"HF {_safe_int(payload['cfg'])}")
+        commands.append(f"HF {validated['cfg']}")
 
+        self._pause_runtime_poll(0.8)
         for command in commands:
             result = self._send_command(command)
             if not result.ok:
                 return {"ok": False, "message": result.message or f"Falha em {command}."}
 
-        self.load_device_snapshot()
+        self.shifter.update(
+            {
+                "available": True,
+                "cal": validated["cal"],
+                "cfg": validated["cfg"],
+                "cfg_flags": self._decode_shifter_cfg(validated["cfg"]),
+            }
+        )
+        self._last_shifter_poll = time.time()
         return {"ok": True, "message": "Calibracao do shifter atualizada."}
 
     def update_manual_calibration(self, payload: dict[str, Any]) -> dict[str, Any]:
-        if not self.manual_calibration["available"]:
-            return {"ok": False, "message": "Este build usa autocalibracao."}
+        try:
+            validated = self._validate_manual_calibration_payload(payload or {})
+        except ValueError as exc:
+            return {"ok": False, "message": str(exc)}
 
         order = [
             ("brake_min", "YA"),
@@ -1176,14 +1544,13 @@ class WheelController:
             ("hbrake_min", "YG"),
             ("hbrake_max", "YH"),
         ]
+        self._pause_runtime_poll(0.7)
         for key, command in order:
-            if key not in payload or payload.get(key) is None:
-                continue
-            result = self._send_command(f"{command} {_safe_int(payload[key])}")
+            result = self._send_command(f"{command} {validated[key]}")
             if not result.ok:
                 return {"ok": False, "message": result.message or f"Falha em {command}."}
 
-        self.load_device_snapshot()
+        self.manual_calibration.update({"available": True, **validated})
         return {"ok": True, "message": "Calibracao manual atualizada."}
 
     def run_action(self, action: str) -> dict[str, Any]:
@@ -1594,6 +1961,7 @@ class WheelController:
                     "shifter": self.shifter,
                     "manual_calibration": self.manual_calibration,
                     "diagnostics": self.diagnostics,
+                    "device_monitor": self.device_monitor,
                     "serial_stats": self.serial_stats,
                     "history": list(self._history),
                     "profiles": self.list_profiles(),

@@ -13,7 +13,7 @@
           <strong id="shifterLiveValue">0 / 0</strong>
         </div>
         <div class="metric-box">
-          <span>Slot estimado</span>
+          <span>Marcha atual</span>
           <strong id="shifterSlotValue">N</strong>
         </div>
       </div>
@@ -35,9 +35,10 @@
           <div class="shifter-slot-label slot-r4">4</div>
           <div class="shifter-slot-label slot-r6">6</div>
           <div id="shifterSlotRightBottom" class="shifter-slot-label slot-r8">R</div>
-          <div class="shifter-slot-label slot-neutral">N</div>
+          <div id="shifterNeutralLabel" class="shifter-slot-label slot-neutral">N</div>
         </div>
       </div>
+      <div id="shifterReverseHint" class="note-panel mt-3">Reverse: aguardando dados da firmware.</div>
       <div class="shifter-divider-readout">
         <span id="shifterXCutSummary">X: 0 / 0 / 0</span>
         <span id="shifterYCutSummary">Y: 0 / 0</span>
@@ -51,7 +52,7 @@
           <h3>Faixas e comportamento</h3>
         </div>
       </div>
-      <div class="note-panel">Arraste as divisorias no quadro ao lado para definir os cortes de marcha. A bolinha mostra a posicao atual lida do cambio em tempo real.</div>
+      <div class="note-panel">Arraste as divisorias no quadro ao lado para definir os cortes de marcha. O `N` do centro representa neutro real: nenhuma marcha encaixada. A bolinha sempre mostra a posicao atual do cambio.</div>
       <div class="field-grid two-col mt-3">
         <label class="toggle-row"><input id="shifterCfgReverse" type="checkbox"><span>Reverse invertido</span></label>
         <label class="toggle-row"><input id="shifterCfgGear8" type="checkbox"><span>Modo 8 marchas</span></label>

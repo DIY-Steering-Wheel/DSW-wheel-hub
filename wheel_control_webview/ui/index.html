@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DSW Wheel Hub</title>
+  <link rel="stylesheet" href="../bootstrap-5.3.0-dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../bootstrap-icons-1.13.1/bootstrap-icons.css">
+  <link rel="stylesheet" href="../ui/styles/base.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="shell-sidebar">
+      <nav class="nav flex-column nav-pills gap-2 sidebar-nav">
+        <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Lobby</span></button>
+        <button class="nav-tab btn" data-tab="about"><i class="bi bi-shield-check"></i><span>About</span></button>
+        <button class="nav-tab btn is-locked" data-tab="wheel" disabled><i class="bi bi-disc"></i><span>Basico</span></button>
+        <button class="nav-tab btn is-locked" data-tab="ffb" disabled><i class="bi bi-lightning-charge"></i><span>Force Feedback</span></button>
+        <button class="nav-tab btn is-locked" data-tab="pedals" disabled><i class="bi bi-sliders2-vertical"></i><span>Pedais</span></button>
+        <button class="nav-tab btn is-locked is-hidden" data-tab="shifter" disabled><i class="bi bi-grid-3x3-gap"></i><span>Cambio XY</span></button>
+        <button class="nav-tab btn is-locked" data-tab="serial" disabled><i class="bi bi-terminal"></i><span>Serial</span></button>
+      </nav>
+    </aside>
+
+    <main class="shell-main">
+      <section class="content-area">
+        <section id="tab-connection" class="tab-page active">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Placa conectada</div>
+          <h3>Identificacao e recursos</h3>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-box">
+          <span>Firmware</span>
+          <strong id="connectionFirmware">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Placa</span>
+          <strong id="connectionBoard">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Porta ativa</span>
+          <strong id="connectionActivePort">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>VID:PID</span>
+          <strong id="connectionVidPid">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Estado</span>
+          <strong id="connectionState">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Encoder</span>
+          <strong id="connectionEncoder">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Saida</span>
+          <strong id="connectionOutput">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Botoes</span>
+          <strong id="connectionButtons">-</strong>
+        </div>
+      </div>
+      <div id="connectionHint" class="note-panel">Use o botao do rodape para conectar a base e preencher os dados desta tela.</div>
+      <div id="connectionDetails" class="note-stack mt-3"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Ferramentas</div>
+          <h3>Firmware e utilitarios</h3>
+        </div>
+      </div>
+      <div class="inline-actions">
+        <button id="connectionRefreshSnapshot" class="app-btn secondary">Recarregar snapshot</button>
+        <button id="connectionOpenFirmware" class="app-btn primary">Gravar firmware</button>
+      </div>
+      <div id="connectionTools" class="tool-grid mt-3"></div>
+    </article>
+  </div>
+</section>
+
+        <section id="tab-about" class="tab-page">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Comunidade</div>
+          <h3>Ajuda no Discord</h3>
+        </div>
+      </div>
+      <div class="discord-frame-shell">
+        <iframe src="https://discord.com/widget?id=1061814371174596708&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Criadores</div>
+          <h3>Autores e projeto original</h3>
+        </div>
+      </div>
+      <div id="aboutCreators" class="note-stack"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Licencas</div>
+          <h3>Componentes e atribuicoes</h3>
+        </div>
+      </div>
+      <div id="aboutLicenses" class="note-stack"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Avisos</div>
+          <h3>Uso, firmware e responsabilidade</h3>
+        </div>
+      </div>
+      <div id="aboutWarnings" class="note-stack"></div>
+    </article>
+  </div>
+</section>
+
+        <section id="tab-wheel" class="tab-page">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Basico do volante</div>
+          <h3>Geometria, encoder e ganho principal</h3>
+        </div>
+      </div>
+      <div class="field-grid two-col">
+        <div class="slider-row field-wide">
+          <label>Rotacao do volante (graus)</label>
+          <input id="wheelRotationDegRange" type="range" min="30" max="1244" step="1">
+          <input id="wheelRotationDeg" type="number" min="30" max="1244" step="1">
+        </div>
+        <div class="slider-row field-wide">
+          <label>Ganho geral de Force Feedback</label>
+          <input id="wheelGeneralGainRange" type="range" min="0" max="200" step="1">
+          <input id="wheelGeneralGain" type="number" min="0" max="200" step="1">
+        </div>
+        <label class="field">
+          <span>Encoder CPR</span>
+          <input id="wheelEncoderCpr" type="number" min="4" max="600000" step="1">
+        </label>
+        <label class="field">
+          <span>Encoder PPR</span>
+          <input id="wheelEncoderPpr" type="number" min="1" max="150000" step="1">
+        </label>
+        <label id="wheelOutputResolutionBox" class="field">
+          <span>Resolucao de saida</span>
+          <input id="wheelOutputResolution" type="text" readonly>
+        </label>
+        <div id="wheelOutputResolutionHint" class="note-panel field-wide">Aguardando leitura da firmware.</div>
+      </div>
+      <div class="note-panel">Rotacao define o curso total do volante. CPR sao as contagens finais por volta lidas pela firmware. PPR sao os pulsos fisicos do encoder; em encoder em quadratura, normalmente `CPR = PPR x 4`.</div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Acoes do volante</div>
+          <h3>Acoes do volante</h3>
+        </div>
+      </div>
+      <div class="button-stack">
+        <button id="wheelCenter" class="app-btn secondary">Recentralizar volante</button>
+        <button id="wheelCalibrate" class="app-btn secondary">Recalibrar volante</button>
+        <button id="wheelResetZ" class="app-btn secondary">Resetar Z-index</button>
+      </div>
+      <div class="note-panel">Os comandos disponiveis dependem do firmware conectado e so aparecem quando fizerem sentido para a base.</div>
+    </article>
+
+    <article class="card field-wide">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Diagnostico do dispositivo</div>
+          <h3>Monitor do joystick no Windows</h3>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-box"><span>Estado</span><strong id="wheelDeviceState">-</strong></div>
+        <div class="metric-box"><span>Dispositivo</span><strong id="wheelDeviceName">-</strong></div>
+        <div class="metric-box"><span>VID:PID</span><strong id="wheelDeviceVidPid">-</strong></div>
+        <div class="metric-box"><span>Botoes ativos</span><strong id="wheelDeviceButtons">-</strong></div>
+      </div>
+      <div id="wheelDeviceStatus" class="note-panel mt-3">Aguardando conexao.</div>
+      <div id="wheelDeviceAxes" class="device-axis-grid mt-3"></div>
+      <div id="wheelDeviceButtonList" class="badge-cloud mt-3"></div>
+    </article>
+  </div>
+</section>
+
+        <section id="tab-ffb" class="tab-page">
+  <div class="page-grid">
+    <article class="card">
+      <div class="card-head">
+        <div class="ffb-hero">
+          <div>
+            <div class="card-kicker">Force Feedback</div>
+            <h3>Game Effects e Desktop Effects</h3>
+          </div>
+          <div class="inline-actions compact-actions">
+            <button id="ffbOpenGuideModal" class="app-btn secondary">O que faz cada ajuste?</button>
+            <button id="ffbOpenOutputModal" class="app-btn secondary shell-icon-btn" title="Abrir configuracoes de saida"><i class="bi bi-gear-fill"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="ffb-section-label">Game Effects</div>
+      <div class="slider-grid slider-grid-ffb mb-3">
+        <div class="slider-card"><div class="slider-row"><label>Ganho geral</label><input id="ffbGeneralRange" type="range" min="0" max="200" step="1"><input id="ffbGeneral" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Constante</label><input id="ffbConstantRange" type="range" min="0" max="200" step="1"><input id="ffbConstant" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Damper</label><input id="ffbDamperRange" type="range" min="0" max="200" step="1"><input id="ffbDamper" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Friction</label><input id="ffbFrictionRange" type="range" min="0" max="200" step="1"><input id="ffbFriction" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Periodic</label><input id="ffbPeriodicRange" type="range" min="0" max="200" step="1"><input id="ffbPeriodic" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Spring</label><input id="ffbSpringRange" type="range" min="0" max="200" step="1"><input id="ffbSpring" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Inertia</label><input id="ffbInertiaRange" type="range" min="0" max="200" step="1"><input id="ffbInertia" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Auto-center</label><input id="ffbCenterRange" type="range" min="0" max="200" step="1"><input id="ffbCenter" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>End stop</label><input id="ffbStopRange" type="range" min="0" max="200" step="1"><input id="ffbStop" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Min torque</label><input id="ffbMinTorqueRange" type="range" min="0" max="200" step="1"><input id="ffbMinTorque" type="number" min="0" max="200"></div></div>
+      </div>
+      <div class="ffb-section-label">Desktop Effects</div>
+      <div class="desktop-effects-grid mb-3">
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Auto-center</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Recentro artificial usado fora dos efeitos enviados pelo jogo.</small>
+          <div class="slider-row slider-row-compact"><input id="ffbCenterMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbCenterMirrorInput" type="number" min="0" max="200"></div>
+        </div>
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Damper</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopDamper" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Resistencia proporcional a velocidade do movimento.</small>
+          <div class="slider-row slider-row-compact"><input id="ffbDamperMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbDamperMirrorInput" type="number" min="0" max="200"></div>
+        </div>
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Inertia</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopInertia" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Simula massa e oposicao a aceleracoes bruscas.</small>
+          <div class="slider-row slider-row-compact"><input id="ffbInertiaMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbInertiaMirrorInput" type="number" min="0" max="200"></div>
+        </div>
+        <div class="desktop-effect-card">
+          <div class="desktop-effect-head"><strong>Friction</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopFriction" type="checkbox"><span>Ativo</span></label></div>
+          <small class="desktop-effect-copy">Atrito seco para dar peso em pequenas mudancas.</small>
+          <div class="slider-row slider-row-compact"><input id="ffbFrictionMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbFrictionMirrorInput" type="number" min="0" max="200"></div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+        <section id="tab-pedals" class="tab-page">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Pedals mode</div>
+          <h3>Mapa de pedais carregado</h3>
+        </div>
+      </div>
+      <div id="pedalsModePanel" class="note-panel note-panel-hero">
+        <strong id="pedalsModeTitle">Aguardando conexao</strong>
+        <p id="pedalsModeText">Conecte a serial para descobrir o mapa de pedal atual.</p>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-box">
+          <span id="pedalsBrakePressureLabel">Brake scaling</span>
+          <strong id="pedalsBrakePressure">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Calibracao</span>
+          <strong id="pedalsCalibration">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Load cell</span>
+          <strong id="pedalsLoadCell">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>ADS1015</span>
+          <strong id="pedalsAds">-</strong>
+        </div>
+      </div>
+      <div class="inline-actions">
+        <button id="pedalsRecalibrate" class="app-btn primary">Recalibrar pedais</button>
+      </div>
+      <div id="pedalsBrakePressureField" class="slider-row field-wide mt-3">
+        <label id="pedalsBrakePressureFieldLabel">Brake scaling</label>
+        <input id="pedalsBrakePressureRange" type="range" min="1" max="255" step="1">
+        <input id="pedalsBrakePressureInput" type="number" min="1" max="255" step="1">
+      </div>
+      <div id="pedalsBrakePressureHint" class="note-panel mt-3">Aguardando leitura da firmware.</div>
+    </article>
+
+    <article id="pedalsManualCard" class="card is-hidden">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Manual calibration</div>
+          <h3>Minimos e maximos por pedal</h3>
+        </div>
+      </div>
+      <div class="pedal-dual-grid">
+        <div class="dual-range-card" data-pedal="brake">
+          <div class="dual-range-head"><strong>Freio</strong><span id="pedalsBrakeRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsBrakeFill" class="dual-range-fill"></div>
+            <input id="pedalsBrakeMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsBrakeMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsBrakeMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsBrakeMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
+
+        <div class="dual-range-card" data-pedal="accel">
+          <div class="dual-range-head"><strong>Acelerador</strong><span id="pedalsAccelRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsAccelFill" class="dual-range-fill"></div>
+            <input id="pedalsAccelMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsAccelMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsAccelMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsAccelMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
+
+        <div class="dual-range-card" data-pedal="clutch">
+          <div class="dual-range-head"><strong>Embreagem</strong><span id="pedalsClutchRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsClutchFill" class="dual-range-fill"></div>
+            <input id="pedalsClutchMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsClutchMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsClutchMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsClutchMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
+
+        <div class="dual-range-card" data-pedal="hbrake">
+          <div class="dual-range-head"><strong>Handbrake</strong><span id="pedalsHbrakeRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsHbrakeFill" class="dual-range-fill"></div>
+            <input id="pedalsHbrakeMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsHbrakeMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsHbrakeMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsHbrakeMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
+      </div>
+      <div class="inline-actions">
+        <button id="pedalsResetDraft" class="app-btn secondary">Descartar alteracoes locais</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+        <section id="tab-shifter" class="tab-page">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Cambio XY</div>
+          <h3>Matriz visual do cambio</h3>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-box">
+          <span>Leitura XY</span>
+          <strong id="shifterLiveValue">0 / 0</strong>
+        </div>
+        <div class="metric-box">
+          <span>Marcha atual</span>
+          <strong id="shifterSlotValue">N</strong>
+        </div>
+      </div>
+      <div class="shifter-visual-shell">
+        <div class="shifter-axis-label shifter-axis-label-y">Y</div>
+        <div id="shifterVisualGrid" class="shifter-visual-grid">
+          <div class="shifter-grid-lines"></div>
+          <div id="shifterBoundaryX0" class="shifter-boundary vertical" data-axis="x" data-index="0"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryX1" class="shifter-boundary vertical" data-axis="x" data-index="1"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryX2" class="shifter-boundary vertical" data-axis="x" data-index="2"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryY0" class="shifter-boundary horizontal" data-axis="y" data-index="0"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterBoundaryY1" class="shifter-boundary horizontal" data-axis="y" data-index="1"><button type="button" class="shifter-boundary-handle"></button></div>
+          <div id="shifterLiveMarker" class="shifter-live-marker"></div>
+          <div class="shifter-slot-label slot-r1">1</div>
+          <div class="shifter-slot-label slot-r3">3</div>
+          <div class="shifter-slot-label slot-r5">5</div>
+          <div id="shifterSlotRightTop" class="shifter-slot-label slot-r7">R</div>
+          <div class="shifter-slot-label slot-r2">2</div>
+          <div class="shifter-slot-label slot-r4">4</div>
+          <div class="shifter-slot-label slot-r6">6</div>
+          <div id="shifterSlotRightBottom" class="shifter-slot-label slot-r8">R</div>
+          <div id="shifterNeutralLabel" class="shifter-slot-label slot-neutral">N</div>
+        </div>
+      </div>
+      <div id="shifterReverseHint" class="note-panel mt-3">Reverse: aguardando dados da firmware.</div>
+      <div class="shifter-divider-readout">
+        <span id="shifterXCutSummary">X: 0 / 0 / 0</span>
+        <span id="shifterYCutSummary">Y: 0 / 0</span>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Configuracao</div>
+          <h3>Faixas e comportamento</h3>
+        </div>
+      </div>
+      <div class="note-panel">Arraste as divisorias no quadro ao lado para definir os cortes de marcha. O `N` do centro representa neutro real: nenhuma marcha encaixada. A bolinha sempre mostra a posicao atual do cambio.</div>
+      <div class="field-grid two-col mt-3">
+        <label class="toggle-row"><input id="shifterCfgReverse" type="checkbox"><span>Reverse invertido</span></label>
+        <label class="toggle-row"><input id="shifterCfgGear8" type="checkbox"><span>Modo 8 marchas</span></label>
+        <label class="toggle-row"><input id="shifterCfgInvertX" type="checkbox"><span>Inverter eixo X</span></label>
+        <label class="toggle-row"><input id="shifterCfgInvertY" type="checkbox"><span>Inverter eixo Y</span></label>
+      </div>
+      <div class="metric-grid mt-3">
+        <div class="metric-box"><span>Corte X esquerdo</span><strong id="shifterCalAValue">0</strong></div>
+        <div class="metric-box"><span>Corte X centro</span><strong id="shifterCalBValue">0</strong></div>
+        <div class="metric-box"><span>Corte X direito</span><strong id="shifterCalCValue">0</strong></div>
+        <div class="metric-box"><span>Corte Y superior</span><strong id="shifterCalDValue">0</strong></div>
+        <div class="metric-box"><span>Corte Y inferior</span><strong id="shifterCalEValue">0</strong></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+        <section id="tab-serial" class="tab-page">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Raw command</div>
+          <h3>Console direto</h3>
+        </div>
+      </div>
+      <div class="field-grid">
+        <label class="field field-wide">
+          <span>Comando</span>
+          <input id="serialRawInput" type="text" placeholder="Ex.: U, V, FG 120, HG, YR, W 9">
+        </label>
+      </div>
+      <div class="inline-actions">
+        <button id="serialRawSend" class="app-btn primary">Enviar</button>
+      </div>
+      <div id="serialFeedback" class="note-panel">Pronto para enviar comandos depois da conexao.</div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Traffic</div>
+          <h3>Monitor serial</h3>
+        </div>
+      </div>
+      <div id="serialHistory" class="serial-monitor"></div>
+    </article>
+  </div>
+</section>
+
+      </section>
+
+    </main>
+
+    <footer class="dock-bar glass-card">
+      <div class="dock-group dock-group-left">
+        <select id="dockPortSelect" class="form-select form-select-sm"></select>
+        <button id="dockRefreshPorts" class="btn btn-sm btn-outline-light shell-btn" title="Atualizar portas"><i class="bi bi-arrow-repeat"></i></button>
+        <button id="dockConnectToggle" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
+      </div>
+
+      <div class="dock-group dock-group-center">
+        <span id="dockStatus" class="badge text-bg-secondary">Offline</span>
+        <span class="dock-stat"><small>TX</small><strong id="dockTx">0%</strong></span>
+        <span class="dock-stat"><small>RX</small><strong id="dockRx">0%</strong></span>
+        <span class="dock-stat"><small>CMD</small><strong id="dockCmd">0</strong></span>
+        <button id="dockSaveEeprom" class="btn btn-sm shell-btn">Salvar EEPROM</button>
+      </div>
+
+      <div class="dock-group dock-group-right">
+        <select id="dockProfileSelect" class="form-select form-select-sm"></select>
+        <button id="dockProfileEdit" class="btn btn-sm shell-btn shell-icon-btn" title="Opcoes de perfil"><i class="bi bi-gear"></i></button>
+      </div>
+    </footer>
+  </div>
+
+  <div class="modal fade" id="profileOptionsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Perfis</div>
+            <h5 class="modal-title mb-0">Gerenciador de perfis</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="profile-manager">
+            <aside class="profile-list-panel">
+              <div class="profile-toolbar">
+                <button id="profileCreateNew" class="app-btn primary shell-icon-btn" title="Criar novo perfil"><i class="bi bi-plus-lg"></i></button>
+                <button id="profileOptionOverwrite" class="app-btn secondary" title="Salvar por cima do perfil selecionado">Sobrescrever</button>
+                <button id="profileOptionRename" class="app-btn secondary" title="Renomear perfil">Renomear</button>
+                <button id="profileOptionOpenJson" class="app-btn secondary" title="Abrir editor JSON">JSON</button>
+                <button id="profileOptionDelete" class="app-btn shell-btn-danger" title="Excluir perfil">Excluir</button>
+              </div>
+              <div class="field-grid">
+                <label class="field field-wide">
+                  <span>Novo perfil</span>
+                  <input id="profileCreateName" type="text" maxlength="64" placeholder="meu-perfil">
+                </label>
+              </div>
+              <div id="profileList" class="profile-list"></div>
+            </aside>
+
+            <section class="profile-detail-panel">
+              <div class="card shell-card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-kicker">Perfil selecionado</div>
+                    <h3 id="profileOptionsCurrentName">Nenhum perfil selecionado</h3>
+                  </div>
+                </div>
+                <div id="profileOptionsHint" class="note-panel">Selecione um perfil na lista ou crie um novo a partir da base conectada.</div>
+              </div>
+
+              <div class="card shell-card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-kicker">Ferramentas</div>
+                    <h3>Detalhes e nome</h3>
+                  </div>
+                </div>
+                <div class="field-grid">
+                  <label class="field field-wide">
+                    <span>Novo nome</span>
+                    <input id="profileRenameName" type="text" maxlength="64" placeholder="novo-nome">
+                  </label>
+                  <div id="profileMeta" class="note-stack"></div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Perfis</div>
+            <h5 class="modal-title mb-0">Editor JSON do perfil</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <input id="profileModalFile" type="hidden">
+          <div class="mb-3">
+            <label for="profileModalName" class="form-label">Nome do perfil</label>
+            <input id="profileModalName" class="form-control" type="text" maxlength="64">
+          </div>
+          <div class="mb-2 d-flex justify-content-between align-items-center">
+            <label for="profileModalJson" class="form-label mb-0">JSON do perfil</label>
+            <small class="text-secondary">Use este modo so quando quiser editar os dados manualmente.</small>
+          </div>
+          <textarea id="profileModalJson" class="form-control profile-json" spellcheck="false"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button id="profileModalSave" type="button" class="btn btn-primary">Salvar perfil</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="firmwareModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Firmware</div>
+            <h5 class="modal-title mb-0">Wizard de gravacao por bootloader</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-lg-4">
+              <div class="card shell-card h-100">
+                <div class="card-body">
+                  <div class="mini-label mb-2">Etapas</div>
+                  <div class="wizard-steps">
+                    <div id="firmwareStep1" class="wizard-step"><span>1</span><div><strong>Capturar portas</strong><small>Memorize o estado atual da USB.</small></div></div>
+                    <div id="firmwareStep2" class="wizard-step"><span>2</span><div><strong>Detectar bootloader</strong><small>Aperte o botao vermelho e avance.</small></div></div>
+                    <div id="firmwareStep3" class="wizard-step"><span>3</span><div><strong>Procurar firmware</strong><small>Escolha recursos e deixe o app comparar.</small></div></div>
+                    <div id="firmwareStep4" class="wizard-step"><span>4</span><div><strong>Armar gravacao</strong><small>O segundo toque no botao vermelho dispara o envio.</small></div></div>
+                  </div>
+                  <div id="firmwareWizardNote" class="note-panel mt-3">Comece capturando as portas atuais.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-8">
+              <div id="firmwarePage1" class="wizard-page">
+                <div class="card shell-card">
+                  <div class="card-body">
+                    <div class="mini-label mb-2">Etapa 1</div>
+                    <h3 class="wizard-title">Escolha da placa e captura USB</h3>
+                    <div class="field-grid mb-3">
+                      <label class="field field-wide">
+                        <span>Qual Arduino sera gravado</span>
+                        <select id="firmwareBoardSelect" class="form-select"></select>
+                      </label>
+                    </div>
+                    <div class="note-panel mb-3">Com a placa no modo normal, capture a lista atual de portas. Isso vira a referencia para detectar o bootloader depois.</div>
+                    <button id="firmwareCaptureBaseline" class="app-btn primary">Capturar portas atuais</button>
+                    <div class="port-list-shell mt-3">
+                      <div class="mini-label mb-2">Portas vistas agora</div>
+                      <div id="firmwarePortsPreview" class="port-preview-list"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="firmwarePage2" class="wizard-page is-hidden">
+                <div class="card shell-card">
+                  <div class="card-body">
+                    <div class="mini-label mb-2">Etapa 2</div>
+                    <h3 class="wizard-title">Deteccao do bootloader</h3>
+                    <ol class="tutorial-list">
+                      <li>Deixe este modal aberto.</li>
+                      <li>Aperte o botao vermelho da placa para entrar em bootloader.</li>
+                      <li>Clique em detectar para o app procurar a nova porta.</li>
+                    </ol>
+                    <div class="inline-actions">
+                      <button id="firmwareDetectBootloader" class="app-btn primary">Detectar bootloader agora</button>
+                    </div>
+                    <div class="metric-grid mt-3">
+                      <div class="metric-box">
+                        <span>Porta do bootloader</span>
+                        <strong id="firmwareBootloaderPort">Sem porta</strong>
+                      </div>
+                      <div class="metric-box">
+                        <span>Portas de referencia</span>
+                        <strong id="firmwareBaselineCount">0</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="firmwarePage3" class="wizard-page is-hidden">
+                <div class="card shell-card">
+                  <div class="card-body">
+                    <div class="mini-label mb-2">Etapa 3</div>
+                    <h3 class="wizard-title">Busca do firmware mais compativel</h3>
+                    <div class="note-panel mb-3">Marque os recursos desejados. Se nao existir um build perfeito, o app sugere o que cobre mais funcoes e lista o que esta faltando.</div>
+                    <div class="inline-actions mb-3">
+                      <button id="firmwareFeaturesInfo" class="app-btn secondary">O que significa cada recurso?</button>
+                    </div>
+                    <div id="firmwareFeatureFilters" class="filter-grid mb-3"></div>
+                    <div class="field-grid two-col">
+                      <label class="field">
+                        <span>Melhor sugestao encontrada</span>
+                        <select id="firmwareSelect" class="form-select"></select>
+                      </label>
+                      <div class="inline-actions align-end">
+                        <button id="firmwareFindBest" class="app-btn primary">Procurar firmware</button>
+                      </div>
+                    </div>
+                    <div id="firmwareRecommendationState" class="note-panel mt-3 mb-2">Selecione as funcoes desejadas para procurar o build mais compativel.</div>
+                    <div id="firmwareDescription" class="note-panel"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="firmwarePage4" class="wizard-page is-hidden">
+                <div class="card shell-card">
+                  <div class="card-body">
+                    <div class="mini-label mb-2">Etapa 4</div>
+                    <h3 class="wizard-title">Armar gravacao automatica</h3>
+                    <div class="metric-grid mb-3">
+                      <div class="metric-box">
+                        <span>Porta preparada</span>
+                        <strong id="firmwareSummaryPort">Sem porta</strong>
+                      </div>
+                      <div class="metric-box">
+                        <span>Firmware selecionado</span>
+                        <strong id="firmwareSummaryFirmware">Nenhum</strong>
+                      </div>
+                    </div>
+                    <div class="note-panel mb-3">Quando voce clicar em armar gravacao, o app vai esperar o bootloader aparecer de novo. Entao aperte o botao vermelho mais uma vez. Assim que a porta reaparecer, o envio comeca automaticamente.</div>
+                    <textarea id="firmwareFlashLog" class="form-control profile-json" readonly></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer wizard-footer">
+          <button id="firmwarePrevStep" type="button" class="btn btn-outline-secondary">Retroceder</button>
+          <button id="firmwareCancel" type="button" class="btn btn-outline-secondary">Cancelar</button>
+          <button id="firmwareNextStep" type="button" class="btn btn-primary">Avancar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="firmwareFeatureInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Firmware</div>
+            <h5 class="modal-title mb-0">Recursos e siglas</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="field-grid">
+            <label class="field field-wide">
+              <span>Digite um codigo ou flags</span>
+              <input id="firmwareExplainInput" type="text" placeholder="Ex.: 230x, azf, mrst">
+            </label>
+            <div id="firmwareExplainResult" class="note-panel">Digite um codigo de firmware ou uma sequencia de flags para ver a traducao.</div>
+            <div id="firmwareFeatureInfoList" class="note-stack"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="ffbOutputModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Force Feedback</div>
+            <h5 class="modal-title mb-0">Saida e mapeamento</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="field-grid two-col">
+            <label id="ffbOutputEnabledField" class="toggle-row field-wide">
+              <input id="ffbOutputEnabled" type="checkbox">
+              <span>Saida DAC habilitada</span>
+            </label>
+            <label class="field">
+              <span>Modo de saida</span>
+              <select id="ffbOutputMode">
+                <option value="pwm+-">pwm+-</option>
+                <option value="pwm0-50-100">pwm0-50-100</option>
+                <option value="pwm+dir">pwm+dir</option>
+                <option value="rcm">rcm</option>
+                <option value="0">dac+-</option>
+                <option value="1">dac0-50-100</option>
+                <option value="2">dac+dir</option>
+              </select>
+            </label>
+            <label id="ffbOutputFrequencyField" class="field">
+              <span>Frequencia PWM / RCM</span>
+              <select id="ffbOutputFrequency"></select>
+            </label>
+            <label id="ffbOutputPhaseField" class="toggle-row field-wide">
+              <input id="ffbOutputPhase" type="checkbox">
+              <span>PWM com correcao de fase</span>
+            </label>
+            <label id="ffbDesktopMonitorField" class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial do FFB</span></label>
+            <label id="ffbDesktopAxisField" class="field field-wide">
+              <span>Eixo que alimenta o xFFB</span>
+              <select id="ffbDesktopAxis">
+                <option value="0">X</option>
+                <option value="1">Y</option>
+                <option value="2">Z</option>
+                <option value="3">RX</option>
+                <option value="4">RY</option>
+              </select>
+            </label>
+          </div>
+          <div class="note-stack mt-3">
+            <div class="note">Monitor serial do FFB: envia telemetria dos efeitos pela serial e ajuda em diagnostico.</div>
+            <div class="note">PWM com correcao de fase: muda o modo de geracao PWM. Use apenas se seu driver ou motor responder melhor assim.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="note-panel">Bits 5-7 do byte E escolhem qual eixo alimenta o xFFB analogico quando a firmware suporta essa troca.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="ffbGuideModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Force Feedback</div>
+            <h5 class="modal-title mb-0">Guia rapido dos ajustes</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="ffbGuideList" class="note-stack"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../bootstrap-5.3.0-dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../ui/scripts/app-shell.js"></script>
+  <script src="../ui/scripts/tabs/connection.js"></script>
+  <script src="../ui/scripts/tabs/about.js"></script>
+  <script src="../ui/scripts/tabs/wheel.js"></script>
+  <script src="../ui/scripts/tabs/ffb.js"></script>
+  <script src="../ui/scripts/tabs/pedals.js"></script>
+  <script src="../ui/scripts/tabs/shifter.js"></script>
+  <script src="../ui/scripts/tabs/serial.js"></script>
+</body>
+</html>

@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import sys
+import tempfile
 
 import webview
 
@@ -33,9 +34,7 @@ def build_ui(root: Path) -> Path:
         fragment = (ui_root / "tabs" / f"{tab_name}.html").read_text(encoding="utf-8")
         template = template.replace(placeholder, fragment)
 
-    build_dir = root / "wheel_control_webview" / ".webview"
-    build_dir.mkdir(parents=True, exist_ok=True)
-    target = build_dir / "index.html"
+    target = ui_root / "index.html"
     target.write_text(template, encoding="utf-8")
     return target
 
@@ -45,7 +44,7 @@ def main() -> None:
     controller = WheelController(root)
     api = WebApi(controller)
     index_path = build_ui(root)
-    storage_path = root / "wheel_control_webview" / ".webview"
+    storage_path = Path(tempfile.gettempdir()) / "DSW-Wheel-Hub-webview"
     storage_path.mkdir(parents=True, exist_ok=True)
     preferred_gui = os.environ.get("BRWHEEL_WEBVIEW_GUI", "").strip().lower()
 
@@ -53,7 +52,7 @@ def main() -> None:
         preferred_gui = "edgechromium"
 
     window_options = {
-        "title": "BR Wheel Control Aero",
+        "title": "DSW Wheel Hub",
         "url": index_path.as_uri(),
         "js_api": api,
         "width": 1440,
@@ -64,7 +63,7 @@ def main() -> None:
         "text_select": False,
     }
 
-    print(f"[BR Wheel Control Aero] Iniciando backend: {preferred_gui}")
+    print(f"[DSW Wheel Hub] Iniciando backend: {preferred_gui}")
     webview.create_window(**window_options)
     webview.start(
         gui=preferred_gui,

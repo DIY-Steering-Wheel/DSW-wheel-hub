@@ -63,12 +63,21 @@
     app.setText("pedalsModeText", text, "");
     app.setText("pedalsBrakePressureLabel", app.text(snapshot.settings.brake_pressure_label, "Brake scaling"), "Brake scaling");
     app.setText("pedalsBrakePressureFieldLabel", app.text(snapshot.settings.brake_pressure_label, "Brake scaling"), "Brake scaling");
+    app.setText(
+      "pedalsBrakePressureHint",
+      snapshot.capabilities.has_load_cell
+        ? "Em load cell, esse controle ajusta a escala/pressao do freio e muda o quanto de forca fisica vira sinal util."
+        : "Em PWM balance, esse controle corrige o equilibrio entre os lados da saida PWM para compensar diferencas do driver ou do motor.",
+      ""
+    );
     app.setText("pedalsBrakePressure", app.text(snapshot.settings.brake_pressure, "-"), "-");
     app.setText("pedalsCalibration", app.text(snapshot.capabilities.pedal_calibration, "-"), "-");
     app.setText("pedalsLoadCell", app.boolText(snapshot.capabilities.has_load_cell), "-");
     app.setText("pedalsAds", app.boolText(snapshot.capabilities.has_ads1015), "-");
     app.idleSet("pedalsBrakePressureInput", module.state.brakePressureDraft !== null ? module.state.brakePressureDraft : snapshot.settings.brake_pressure);
     app.idleSet("pedalsBrakePressureRange", module.state.brakePressureDraft !== null ? module.state.brakePressureDraft : snapshot.settings.brake_pressure);
+    app.byId("pedalsBrakePressureInput").max = "255";
+    app.byId("pedalsBrakePressureRange").max = "255";
     app.toggleHidden(app.byId("pedalsBrakePressureField"), !snapshot.capabilities.supports_brake_scaling);
 
     app.toggleHidden(app.byId("pedalsManualCard"), !snapshot.manual_calibration.available);
@@ -166,10 +175,15 @@
   }
 
   function renderDualRange(prefix, minValue, maxValue) {
+    var analogLimit = currentAnalogLimit();
     var start = Math.max(0, Math.min(Number(minValue), Number(maxValue)));
-    var end = Math.min(4095, Math.max(Number(minValue), Number(maxValue)));
+    var end = Math.min(analogLimit, Math.max(Number(minValue), Number(maxValue)));
     var title = "pedals" + cap(prefix);
     var fill = window.BRWheelApp.byId(title + "Fill");
+    window.BRWheelApp.byId(title + "Min").max = String(analogLimit);
+    window.BRWheelApp.byId(title + "Max").max = String(analogLimit);
+    window.BRWheelApp.byId(title + "MinRange").max = String(analogLimit);
+    window.BRWheelApp.byId(title + "MaxRange").max = String(analogLimit);
     window.BRWheelApp.idleSet(title + "Min", start);
     window.BRWheelApp.idleSet(title + "Max", end);
     window.BRWheelApp.idleSet(title + "MinRange", start);
@@ -177,8 +191,8 @@
     window.BRWheelApp.setText(title + "RangeLabel", start + " - " + end, "");
 
     if (fill) {
-      fill.style.left = (start / 4095 * 100) + "%";
-      fill.style.width = Math.max(0, ((end - start) / 4095 * 100)) + "%";
+      fill.style.left = (start / analogLimit * 100) + "%";
+      fill.style.width = Math.max(0, ((end - start) / analogLimit * 100)) + "%";
     }
   }
 
@@ -197,6 +211,11 @@
 
   function cap(value) {
     return value.charAt(0).toUpperCase() + value.slice(1);
+  }
+
+  function currentAnalogLimit() {
+    var snapshot = window.BRWheelApp.state.snapshot;
+    return snapshot && snapshot.capabilities && snapshot.capabilities.analog_resolution ? Number(snapshot.capabilities.analog_resolution) : 1023;
   }
 
   window.BRWheelApp.registerTab("pedals", module);

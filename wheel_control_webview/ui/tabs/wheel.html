@@ -10,8 +10,8 @@
       <div class="field-grid two-col">
         <div class="slider-row field-wide">
           <label>Rotacao do volante (graus)</label>
-          <input id="wheelRotationDegRange" type="range" min="30" max="1800" step="1">
-          <input id="wheelRotationDeg" type="number" min="30" max="1800" step="1">
+          <input id="wheelRotationDegRange" type="range" min="30" max="1244" step="1">
+          <input id="wheelRotationDeg" type="number" min="30" max="1244" step="1">
         </div>
         <div class="slider-row field-wide">
           <label>Ganho geral de Force Feedback</label>
@@ -22,12 +22,17 @@
           <span>Encoder CPR</span>
           <input id="wheelEncoderCpr" type="number" min="4" max="600000" step="1">
         </label>
+        <label class="field">
+          <span>Encoder PPR</span>
+          <input id="wheelEncoderPpr" type="number" min="1" max="150000" step="1">
+        </label>
         <label id="wheelOutputResolutionBox" class="field">
           <span>Resolucao de saida</span>
           <input id="wheelOutputResolution" type="text" readonly>
         </label>
+        <div id="wheelOutputResolutionHint" class="note-panel field-wide">Aguardando leitura da firmware.</div>
       </div>
-      <div class="note-panel">Rotacao define o curso total do volante. Encoder CPR ajusta a leitura do sensor. O ganho geral controla a intensidade base do FFB antes dos ajustes finos.</div>
+      <div class="note-panel">Rotacao define o curso total do volante. CPR sao as contagens finais por volta lidas pela firmware. PPR sao os pulsos fisicos do encoder; em encoder em quadratura, normalmente `CPR = PPR x 4`.</div>
     </article>
 
     <article class="card">
@@ -43,6 +48,24 @@
         <button id="wheelResetZ" class="app-btn secondary">Resetar Z-index</button>
       </div>
       <div class="note-panel">Os comandos disponiveis dependem do firmware conectado e so aparecem quando fizerem sentido para a base.</div>
+    </article>
+
+    <article class="card field-wide">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Diagnostico do dispositivo</div>
+          <h3>Monitor do joystick no Windows</h3>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-box"><span>Estado</span><strong id="wheelDeviceState">-</strong></div>
+        <div class="metric-box"><span>Dispositivo</span><strong id="wheelDeviceName">-</strong></div>
+        <div class="metric-box"><span>VID:PID</span><strong id="wheelDeviceVidPid">-</strong></div>
+        <div class="metric-box"><span>Botoes ativos</span><strong id="wheelDeviceButtons">-</strong></div>
+      </div>
+      <div id="wheelDeviceStatus" class="note-panel mt-3">Aguardando conexao.</div>
+      <div id="wheelDeviceAxes" class="device-axis-grid mt-3"></div>
+      <div id="wheelDeviceButtonList" class="badge-cloud mt-3"></div>
     </article>
   </div>
 </section>

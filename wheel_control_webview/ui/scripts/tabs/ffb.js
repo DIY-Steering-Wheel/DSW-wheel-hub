@@ -1,6 +1,7 @@
 (function () {
   var module = {};
   var pairs = [
+    ["ffbGeneral", "ffbGeneralRange", "general_gain"],
     ["ffbConstant", "ffbConstantRange", "constant_gain"],
     ["ffbDamper", "ffbDamperRange", "damper_gain"],
     ["ffbFriction", "ffbFrictionRange", "friction_gain"],
@@ -10,6 +11,12 @@
     ["ffbCenter", "ffbCenterRange", "center_gain"],
     ["ffbStop", "ffbStopRange", "stop_gain"],
     ["ffbMinTorque", "ffbMinTorqueRange", "min_torque_percent_x10"]
+  ];
+  var mirrorPairs = [
+    ["ffbCenterMirrorRange", "ffbCenterMirrorInput", "ffbCenter", "center_gain", "ffbDesktopAutoCenter"],
+    ["ffbDamperMirrorRange", "ffbDamperMirrorInput", "ffbDamper", "damper_gain", "ffbDesktopDamper"],
+    ["ffbInertiaMirrorRange", "ffbInertiaMirrorInput", "ffbInertia", "inertia_gain", "ffbDesktopInertia"],
+    ["ffbFrictionMirrorRange", "ffbFrictionMirrorInput", "ffbFriction", "friction_gain", "ffbDesktopFriction"]
   ];
 
   module.state = {
@@ -22,10 +29,12 @@
   };
 
   module.bind = function (app) {
-    var index;
-    for (index = 0; index < pairs.length; index += 1) {
-      bindPair(pairs[index][0], pairs[index][1], pairs[index][2]);
-    }
+    pairs.forEach(function (pair) {
+      bindPair(pair[0], pair[1], pair[2]);
+    });
+    mirrorPairs.forEach(function (pair) {
+      bindMirrorPair(pair[0], pair[1], pair[2], pair[3], pair[4]);
+    });
     populateFrequency();
 
     app.byId("ffbOpenOutputModal").onclick = function () {
@@ -35,51 +44,57 @@
       renderGuide();
       app.getModal("ffbGuideModal").show();
     };
-    bindOutputDraft();
-    bindDesktopDraft();
-    bindDesktopRanges();
+
+    ["ffbOutputEnabled", "ffbOutputMode", "ffbOutputFrequency", "ffbOutputPhase"].forEach(bindOutputField);
+    ["ffbDesktopAutoCenter", "ffbDesktopDamper", "ffbDesktopInertia", "ffbDesktopFriction", "ffbDesktopMonitor", "ffbDesktopAxis"].forEach(bindDesktopField);
   };
 
   module.render = function (snapshot, app) {
+    var gains;
     if (!snapshot.connected) {
-      module.state.gainsDraft = null;
-      module.state.outputDraft = null;
-      module.state.desktopDraft = null;
-      clearTimers();
+      resetDrafts();
     }
-    var gains = module.state.gainsDraft || snapshot.settings;
+
+    gains = module.state.gainsDraft || snapshot.settings;
     populateFrequency();
 
-    setPair("ffbConstant", "ffbConstantRange", gains.constant_gain);
-    setPair("ffbDamper", "ffbDamperRange", gains.damper_gain);
-    setPair("ffbFriction", "ffbFrictionRange", gains.friction_gain);
-    setPair("ffbPeriodic", "ffbPeriodicRange", gains.periodic_gain);
-    setPair("ffbSpring", "ffbSpringRange", gains.spring_gain);
-    setPair("ffbInertia", "ffbInertiaRange", gains.inertia_gain);
-    setPair("ffbCenter", "ffbCenterRange", gains.center_gain);
-    setPair("ffbStop", "ffbStopRange", gains.stop_gain);
-    setPair("ffbMinTorque", "ffbMinTorqueRange", gains.min_torque_percent_x10);
+    pairs.forEach(function (pair) {
+      setPair(pair[0], pair[1], gains[pair[2]]);
+    });
 
     renderDesktop(snapshot, app);
     renderOutput(snapshot, app);
-    renderSummaries(snapshot, app);
-
     app.toggleHidden(app.byId("ffbOpenOutputModal"), !snapshot.capabilities.supports_output_setup && !snapshot.capabilities.supports_axis_select);
     app.byId("ffbOpenOutputModal").disabled = !snapshot.connected;
   };
 
-  function clearTimers() {
-    if (module.state.gainsTimer) {
-      window.clearTimeout(module.state.gainsTimer);
-      module.state.gainsTimer = null;
-    }
-    if (module.state.outputTimer) {
-      window.clearTimeout(module.state.outputTimer);
-      module.state.outputTimer = null;
-    }
-    if (module.state.desktopTimer) {
-      window.clearTimeout(module.state.desktopTimer);
-      module.state.desktopTimer = null;
+  function resetDrafts() {
+    module.state.gainsDraft = null;
+    module.state.outputDraft = null;
+    module.state.desktopDraft = null;
+    ["gainsTimer", "outputTimer", "desktopTimer"].forEach(function (key) {
+      if (module.state[key]) {
+        window.clearTimeout(module.state[key]);
+        module.state[key] = null;
+      }
+    });
+  }
+
+  function ensureGainsDraft() {
+    var snapshot = window.BRWheelApp.state.snapshot;
+    if (!module.state.gainsDraft && snapshot) {
+      module.state.gainsDraft = {
+        general_gain: snapshot.settings.general_gain,
+        constant_gain: snapshot.settings.constant_gain,
+        damper_gain: snapshot.settings.damper_gain,
+        friction_gain: snapshot.settings.friction_gain,
+        periodic_gain: snapshot.settings.periodic_gain,
+        spring_gain: snapshot.settings.spring_gain,
+        inertia_gain: snapshot.settings.inertia_gain,
+        center_gain: snapshot.settings.center_gain,
+        stop_gain: snapshot.settings.stop_gain,
+        min_torque_percent_x10: snapshot.settings.min_torque_percent_x10
+      };
     }
   }
 
@@ -100,86 +115,80 @@
     };
   }
 
-  function ensureGainsDraft() {
-    if (!module.state.gainsDraft && window.BRWheelApp.state.snapshot) {
-      module.state.gainsDraft = {
-        general_gain: window.BRWheelApp.state.snapshot.settings.general_gain,
-        constant_gain: window.BRWheelApp.state.snapshot.settings.constant_gain,
-        damper_gain: window.BRWheelApp.state.snapshot.settings.damper_gain,
-        friction_gain: window.BRWheelApp.state.snapshot.settings.friction_gain,
-        periodic_gain: window.BRWheelApp.state.snapshot.settings.periodic_gain,
-        spring_gain: window.BRWheelApp.state.snapshot.settings.spring_gain,
-        inertia_gain: window.BRWheelApp.state.snapshot.settings.inertia_gain,
-        center_gain: window.BRWheelApp.state.snapshot.settings.center_gain,
-        stop_gain: window.BRWheelApp.state.snapshot.settings.stop_gain,
-        min_torque_percent_x10: window.BRWheelApp.state.snapshot.settings.min_torque_percent_x10
-      };
-    }
-  }
-
   function setPair(numberId, rangeId, value) {
     window.BRWheelApp.idleSet(numberId, value);
     window.BRWheelApp.idleSet(rangeId, value);
   }
 
+  function bindMirrorPair(rangeId, inputId, sourceNumberId, key, toggleId) {
+    var rangeInput = window.BRWheelApp.byId(rangeId);
+    var numberInput = window.BRWheelApp.byId(inputId);
+    var sourceInput = window.BRWheelApp.byId(sourceNumberId);
+
+    function update(value) {
+      ensureGainsDraft();
+      sourceInput.value = value;
+      rangeInput.value = value;
+      numberInput.value = value;
+      module.state.gainsDraft[key] = Number(value);
+      queueGainsSend();
+    }
+
+    rangeInput.oninput = function () {
+      update(rangeInput.value);
+    };
+    numberInput.oninput = function () {
+      update(numberInput.value);
+    };
+
+    window.BRWheelApp.byId(toggleId).onchange = function () {
+      module.state.desktopDraft = collectDesktop();
+      queueDesktopSend();
+    };
+  }
+
   function populateFrequency() {
     var select = window.BRWheelApp.byId("ffbOutputFrequency");
     var options = window.BRWheelApp.state.staticData.output_frequency_options || [];
-    var index;
     if (!select || select.options.length || !options.length) {
       return;
     }
-    for (index = 0; index < options.length; index += 1) {
-      var option = document.createElement("option");
-      option.value = String(options[index].index);
-      option.appendChild(
-        document.createTextNode(
-          "Indice " + options[index].index + " - PWM " + options[index].pwm_label + " / RCM " + options[index].rcm_label
-        )
-      );
-      select.appendChild(option);
+    options.forEach(function (option) {
+      var item = document.createElement("option");
+      item.value = String(option.index);
+      item.textContent = "Indice " + option.index + " - PWM " + option.pwm_label + " / RCM " + option.rcm_label;
+      select.appendChild(item);
+    });
+  }
+
+  function bindOutputField(id) {
+    var element = window.BRWheelApp.byId(id);
+    if (!element) {
+      return;
     }
+    element.oninput = function () {
+      module.state.outputDraft = collectOutput();
+      queueOutputSend();
+    };
+    element.onchange = function () {
+      module.state.outputDraft = collectOutput();
+      queueOutputSend();
+    };
   }
 
-  function bindOutputDraft() {
-    ["ffbOutputEnabled", "ffbOutputMode", "ffbOutputFrequency", "ffbOutputPhase"].forEach(function (id) {
-      var element = window.BRWheelApp.byId(id);
-      if (!element) {
-        return;
-      }
-      element.oninput = function () {
-        module.state.outputDraft = collectOutput();
-        queueOutputSend();
-      };
-      element.onchange = function () {
-        module.state.outputDraft = collectOutput();
-        queueOutputSend();
-      };
-    });
-  }
-
-  function bindDesktopDraft() {
-    ["ffbDesktopAutoCenter", "ffbDesktopDamper", "ffbDesktopInertia", "ffbDesktopFriction", "ffbDesktopMonitor", "ffbDesktopAxis"].forEach(function (id) {
-      var element = window.BRWheelApp.byId(id);
-      if (!element) {
-        return;
-      }
-      element.oninput = function () {
-        module.state.desktopDraft = collectDesktop();
-        queueDesktopSend();
-      };
-      element.onchange = function () {
-        module.state.desktopDraft = collectDesktop();
-        queueDesktopSend();
-      };
-    });
-  }
-
-  function bindDesktopRanges() {
-    linkMirrorRange("ffbCenterMirrorRange", "ffbCenter", "center_gain");
-    linkMirrorRange("ffbDamperMirrorRange", "ffbDamper", "damper_gain");
-    linkMirrorRange("ffbInertiaMirrorRange", "ffbInertia", "inertia_gain");
-    linkMirrorRange("ffbFrictionMirrorRange", "ffbFriction", "friction_gain");
+  function bindDesktopField(id) {
+    var element = window.BRWheelApp.byId(id);
+    if (!element) {
+      return;
+    }
+    element.oninput = function () {
+      module.state.desktopDraft = collectDesktop();
+      queueDesktopSend();
+    };
+    element.onchange = function () {
+      module.state.desktopDraft = collectDesktop();
+      queueDesktopSend();
+    };
   }
 
   function queueGainsSend() {
@@ -192,7 +201,7 @@
           module.state.gainsDraft = null;
         }
       });
-    }, 220);
+    }, 260);
   }
 
   function queueOutputSend() {
@@ -205,7 +214,7 @@
           module.state.outputDraft = null;
         }
       });
-    }, 220);
+    }, 260);
   }
 
   function queueDesktopSend() {
@@ -218,11 +227,12 @@
           module.state.desktopDraft = null;
         }
       });
-    }, 220);
+    }, 260);
   }
 
   function renderDesktop(snapshot, app) {
     var desktop = module.state.desktopDraft || snapshot.settings.desktop;
+    var gains = module.state.gainsDraft || snapshot.settings;
     app.idleCheck("ffbDesktopAutoCenter", desktop.auto_center);
     app.idleCheck("ffbDesktopDamper", desktop.damper);
     app.idleCheck("ffbDesktopInertia", desktop.inertia);
@@ -231,14 +241,18 @@
     app.idleSet("ffbDesktopAxis", desktop.axis_index);
     app.toggleHidden(app.byId("ffbDesktopAxisField"), !snapshot.capabilities.supports_axis_select);
     app.byId("ffbDesktopAxis").disabled = !snapshot.capabilities.supports_axis_select;
-    app.idleSet("ffbCenterMirrorRange", (module.state.gainsDraft || snapshot.settings).center_gain);
-    app.idleSet("ffbDamperMirrorRange", (module.state.gainsDraft || snapshot.settings).damper_gain);
-    app.idleSet("ffbInertiaMirrorRange", (module.state.gainsDraft || snapshot.settings).inertia_gain);
-    app.idleSet("ffbFrictionMirrorRange", (module.state.gainsDraft || snapshot.settings).friction_gain);
-    app.byId("ffbCenterMirrorRange").disabled = !desktop.auto_center;
-    app.byId("ffbDamperMirrorRange").disabled = !desktop.damper;
-    app.byId("ffbInertiaMirrorRange").disabled = !desktop.inertia;
-    app.byId("ffbFrictionMirrorRange").disabled = !desktop.friction;
+
+    setCompactPair("ffbCenterMirrorRange", "ffbCenterMirrorInput", gains.center_gain, !desktop.auto_center);
+    setCompactPair("ffbDamperMirrorRange", "ffbDamperMirrorInput", gains.damper_gain, !desktop.damper);
+    setCompactPair("ffbInertiaMirrorRange", "ffbInertiaMirrorInput", gains.inertia_gain, !desktop.inertia);
+    setCompactPair("ffbFrictionMirrorRange", "ffbFrictionMirrorInput", gains.friction_gain, !desktop.friction);
+  }
+
+  function setCompactPair(rangeId, inputId, value, disabled) {
+    window.BRWheelApp.idleSet(rangeId, value);
+    window.BRWheelApp.idleSet(inputId, value);
+    window.BRWheelApp.byId(rangeId).disabled = disabled;
+    window.BRWheelApp.byId(inputId).disabled = disabled;
   }
 
   function renderOutput(snapshot, app) {
@@ -257,44 +271,12 @@
     }
   }
 
-  function renderSummaries(snapshot, app) {
-    var output = module.state.outputDraft || snapshot.settings.output;
-    var desktop = module.state.desktopDraft || snapshot.settings.desktop;
-    var effectNames = [];
-
-    if (desktop.auto_center) {
-      effectNames.push("Auto-center");
-    }
-    if (desktop.damper) {
-      effectNames.push("Damper");
-    }
-    if (desktop.inertia) {
-      effectNames.push("Inertia");
-    }
-    if (desktop.friction) {
-      effectNames.push("Friction");
-    }
-    if (desktop.monitor) {
-      effectNames.push("Monitor");
-    }
-
-    app.setText("ffbOutputSummary", output.uses_dac ? output.mode_label : (output.mode_label + " / " + output.frequency_label), "-");
-    app.setText("ffbAxisSummary", snapshot.capabilities.supports_axis_select ? (desktop.axis_label || ["X", "Y", "Z", "RX", "RY"][desktop.axis_index] || "-") : "Fixo na firmware", "-");
-    app.setText("ffbEffectsSummary", effectNames.length ? effectNames.join(", ") : "Nenhum", "-");
-  }
-
   function collectGains() {
-    return {
-      constant_gain: Number(window.BRWheelApp.byId("ffbConstant").value),
-      damper_gain: Number(window.BRWheelApp.byId("ffbDamper").value),
-      friction_gain: Number(window.BRWheelApp.byId("ffbFriction").value),
-      periodic_gain: Number(window.BRWheelApp.byId("ffbPeriodic").value),
-      spring_gain: Number(window.BRWheelApp.byId("ffbSpring").value),
-      inertia_gain: Number(window.BRWheelApp.byId("ffbInertia").value),
-      center_gain: Number(window.BRWheelApp.byId("ffbCenter").value),
-      stop_gain: Number(window.BRWheelApp.byId("ffbStop").value),
-      min_torque_percent_x10: Number(window.BRWheelApp.byId("ffbMinTorque").value)
-    };
+    var payload = {};
+    pairs.forEach(function (pair) {
+      payload[pair[2]] = Number(window.BRWheelApp.byId(pair[0]).value);
+    });
+    return payload;
   }
 
   function collectDesktop() {
@@ -304,9 +286,7 @@
       inertia: window.BRWheelApp.byId("ffbDesktopInertia").checked,
       friction: window.BRWheelApp.byId("ffbDesktopFriction").checked,
       monitor: window.BRWheelApp.byId("ffbDesktopMonitor").checked,
-      axis_index: Number(window.BRWheelApp.byId("ffbDesktopAxis").value),
-      axis_label: ["X", "Y", "Z", "RX", "RY"][Number(window.BRWheelApp.byId("ffbDesktopAxis").value)] || "X",
-      supports_axis_select: !window.BRWheelApp.byId("ffbDesktopAxis").disabled
+      axis_index: Number(window.BRWheelApp.byId("ffbDesktopAxis").value)
     };
   }
 
@@ -316,43 +296,26 @@
       return {
         uses_dac: true,
         enabled: window.BRWheelApp.byId("ffbOutputEnabled").checked,
-        mode_code: Number(window.BRWheelApp.byId("ffbOutputMode").value),
-        mode_label: window.BRWheelApp.byId("ffbOutputMode").options[window.BRWheelApp.byId("ffbOutputMode").selectedIndex].text
+        mode_code: Number(window.BRWheelApp.byId("ffbOutputMode").value)
       };
     }
     return {
       uses_dac: false,
       phase_correct: window.BRWheelApp.byId("ffbOutputPhase").checked,
       frequency_index: Number(window.BRWheelApp.byId("ffbOutputFrequency").value),
-      frequency_label: window.BRWheelApp.byId("ffbOutputFrequency").options[window.BRWheelApp.byId("ffbOutputFrequency").selectedIndex].text,
       mode_label: window.BRWheelApp.byId("ffbOutputMode").value
-    };
-  }
-
-  function linkMirrorRange(mirrorId, sourceNumberId, key) {
-    var mirror = window.BRWheelApp.byId(mirrorId);
-    var source = window.BRWheelApp.byId(sourceNumberId);
-    mirror.oninput = function () {
-      ensureGainsDraft();
-      source.value = mirror.value;
-      module.state.gainsDraft[key] = Number(mirror.value);
-      queueGainsSend();
     };
   }
 
   function renderGuide() {
     var wrap = window.BRWheelApp.byId("ffbGuideList");
     var items = [
-      "Ganho geral: fica na aba Basico e multiplica a intensidade total dos efeitos vindos do jogo.",
-      "Constante: pesa forcas continuas, como empurroes uniformes.",
-      "Damper: adiciona resistencia proporcional a velocidade do movimento.",
-      "Friction: adiciona atrito seco, segurando o volante perto de pequenas mudancas.",
-      "Periodic: regula seno, quadrada, serrilha e outras ondas periodicas.",
-      "Spring: pesa molas condicionais vindas do jogo.",
-      "Inertia: simula massa e oposicao a aceleracao do volante.",
-      "Auto-center: controla a forca do recentro de desktop.",
-      "End stop: define a pancada nas extremidades de curso.",
-      "Min torque: compensa zonas mortas do motor em baixas forcas."
+      "Ganho geral: escala principal do Force Feedback antes dos demais ganhos.",
+      "Game Effects: ganhos vindos do jogo, como constante, periodic, spring e afins.",
+      "Desktop Effects: efeitos locais do driver/firmware, uteis para teste ou uso fora do jogo.",
+      "Monitor serial do FFB: envia informacoes dos efeitos para a serial, util para diagnostico.",
+      "PWM com correcao de fase: muda a forma como o timer gera PWM; use apenas se o driver/motor responder melhor nesse modo.",
+      "Eixo xFFB: so aparece em firmwares que realmente permitem remapear o eixo analogico do FFB."
     ];
     window.BRWheelApp.clearChildren(wrap);
     items.forEach(function (item) {

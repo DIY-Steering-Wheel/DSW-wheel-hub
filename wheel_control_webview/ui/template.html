@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BR Wheel Control Aero</title>
+  <title>DSW Wheel Hub</title>
   <link rel="stylesheet" href="../bootstrap-5.3.0-dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="../bootstrap-icons-1.13.1/bootstrap-icons.css">
   <link rel="stylesheet" href="../ui/styles/base.css">
@@ -343,9 +343,9 @@
             </label>
             <label id="ffbOutputPhaseField" class="toggle-row field-wide">
               <input id="ffbOutputPhase" type="checkbox">
-              <span>Phase correct</span>
+              <span>PWM com correcao de fase</span>
             </label>
-            <label id="ffbDesktopMonitorField" class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial</span></label>
+            <label id="ffbDesktopMonitorField" class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial do FFB</span></label>
             <label id="ffbDesktopAxisField" class="field field-wide">
               <span>Eixo que alimenta o xFFB</span>
               <select id="ffbDesktopAxis">
@@ -356,6 +356,10 @@
                 <option value="4">RY</option>
               </select>
             </label>
+          </div>
+          <div class="note-stack mt-3">
+            <div class="note">Monitor serial do FFB: envia telemetria dos efeitos pela serial e ajuda em diagnostico.</div>
+            <div class="note">PWM com correcao de fase: muda o modo de geracao PWM. Use apenas se seu driver ou motor responder melhor assim.</div>
           </div>
         </div>
         <div class="modal-footer">
