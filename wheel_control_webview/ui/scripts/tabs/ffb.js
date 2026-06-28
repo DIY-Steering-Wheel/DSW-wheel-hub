@@ -32,6 +32,7 @@
   };
 
   module.render = function (snapshot, app) {
+    populateFrequency();
     setPair("ffbGeneral", "ffbGeneralRange", snapshot.settings.general_gain);
     setPair("ffbConstant", "ffbConstantRange", snapshot.settings.constant_gain);
     setPair("ffbDamper", "ffbDamperRange", snapshot.settings.damper_gain);
@@ -76,14 +77,19 @@
 
   function populateFrequency() {
     var select = window.BRWheelApp.byId("ffbOutputFrequency");
+    var options = window.BRWheelApp.state.staticData.output_frequency_options || [];
     var index;
-    if (select.options.length) {
+    if (!select || select.options.length || !options.length) {
       return;
     }
-    for (index = 0; index <= 12; index += 1) {
+    for (index = 0; index < options.length; index += 1) {
       var option = document.createElement("option");
-      option.value = String(index);
-      option.appendChild(document.createTextNode("Indice " + index));
+      option.value = String(options[index].index);
+      option.appendChild(
+        document.createTextNode(
+          "Indice " + options[index].index + " - PWM " + options[index].pwm_label + " / RCM " + options[index].rcm_label
+        )
+      );
       select.appendChild(option);
     }
   }

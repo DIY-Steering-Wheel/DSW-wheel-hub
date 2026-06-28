@@ -20,22 +20,6 @@
   };
 
   module.render = function (snapshot, app) {
-    var wrap = app.byId("connectionPortsList");
-    var index;
-    app.clearChildren(wrap);
-
-    if (!snapshot.ports.length) {
-      addPortItem(wrap, "Nenhuma porta candidata encontrada.", "");
-    } else {
-      for (index = 0; index < snapshot.ports.length; index += 1) {
-        addPortItem(
-          wrap,
-          snapshot.ports[index].device + " - " + app.text(snapshot.ports[index].description || snapshot.ports[index].product, "porta serial"),
-          "score " + snapshot.ports[index].score + " | " + app.text(snapshot.ports[index].manufacturer, "sem fabricante")
-        );
-      }
-    }
-
     app.setText("connectionActivePort", app.text(snapshot.connection.port, "-"), "-");
     app.setText("connectionState", app.text(snapshot.diagnostics.controller_state_label, "-"), "-");
     app.setText("connectionEncoder", app.text(snapshot.capabilities.encoder, "-"), "-");
@@ -51,20 +35,13 @@
       snapshot.connected ? "Base conectada. As abas do app foram habilitadas conforme os recursos presentes na firmware atual." : "Conecte a base para habilitar os setores modulares do app.",
       ""
     );
+    app.setText(
+      "connectionPortHint",
+      snapshot.ports.length ? snapshot.ports.length + " porta(s) candidata(s) encontrada(s). A melhor opcao costuma vir marcada com * no seletor." : "Nenhuma porta candidata encontrada no momento.",
+      ""
+    );
     app.byId("connectionOpenFirmware").disabled = !(app.state.staticData && app.state.staticData.firmware_catalog && app.state.staticData.firmware_catalog.length);
   };
-
-  function addPortItem(wrap, title, meta) {
-    var item = document.createElement("div");
-    item.className = "list-item";
-    item.appendChild(document.createTextNode(title));
-    if (meta) {
-      var small = document.createElement("small");
-      small.appendChild(document.createTextNode(meta));
-      item.appendChild(small);
-    }
-    wrap.appendChild(item);
-  }
 
   window.BRWheelApp.registerTab("connection", module);
 }());

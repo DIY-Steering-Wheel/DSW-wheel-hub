@@ -31,7 +31,7 @@
 
       <nav class="nav flex-column nav-pills gap-2 sidebar-nav">
         <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Connection</span></button>
-        <button class="nav-tab btn" data-tab="about"><i class="bi bi-info-circle"></i><span>About</span></button>
+        <button class="nav-tab btn" data-tab="about"><i class="bi bi-shield-check"></i><span>Bolt</span></button>
         <button class="nav-tab btn is-locked" data-tab="wheel" disabled><i class="bi bi-disc"></i><span>Volante</span></button>
         <button class="nav-tab btn is-locked" data-tab="ffb" disabled><i class="bi bi-lightning-charge"></i><span>Force Feedback</span></button>
         <button class="nav-tab btn is-locked" data-tab="pedals" disabled><i class="bi bi-sliders2-vertical"></i><span>Pedais</span></button>
@@ -54,7 +54,7 @@
       <footer class="dock-bar glass-card">
         <div class="dock-group dock-group-left">
           <select id="dockPortSelect" class="form-select form-select-sm"></select>
-          <button id="dockRefreshPorts" class="btn btn-sm btn-outline-light shell-btn"><i class="bi bi-arrow-repeat"></i></button>
+          <button id="dockRefreshPorts" class="btn btn-sm btn-outline-light shell-btn" title="Atualizar portas"><i class="bi bi-arrow-repeat"></i></button>
           <button id="dockConnect" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
           <button id="dockDisconnect" class="btn btn-sm shell-btn">Desconectar</button>
         </div>
@@ -64,26 +64,93 @@
           <span class="dock-stat"><small>TX</small><strong id="dockTx">0%</strong></span>
           <span class="dock-stat"><small>RX</small><strong id="dockRx">0%</strong></span>
           <span class="dock-stat"><small>CMD</small><strong id="dockCmd">0</strong></span>
+          <button id="dockSaveEeprom" class="btn btn-sm shell-btn">Salvar EEPROM</button>
         </div>
 
         <div class="dock-group dock-group-right">
           <select id="dockProfileSelect" class="form-select form-select-sm"></select>
-          <button id="dockProfileSave" class="btn btn-sm shell-btn">Salvar atual</button>
-          <button id="dockProfileEdit" class="btn btn-sm shell-btn">Editar</button>
-          <button id="dockLoadProfile" class="btn btn-sm shell-btn">Carregar</button>
-          <button id="dockDeleteProfile" class="btn btn-sm shell-btn shell-btn-danger"><i class="bi bi-trash3"></i></button>
+          <button id="dockProfileEdit" class="btn btn-sm shell-btn shell-icon-btn" title="Opcoes de perfil"><i class="bi bi-gear"></i></button>
         </div>
       </footer>
     </main>
   </div>
 
-  <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="profileOptionsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content modal-glass">
         <div class="modal-header">
           <div>
             <div class="mini-label">Perfis</div>
-            <h5 class="modal-title mb-0">Editor de perfil</h5>
+            <h5 class="modal-title mb-0">Opcoes de perfil</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="page-grid">
+            <article class="card shell-card">
+              <div class="card-head">
+                <div>
+                  <div class="card-kicker">Perfil ativo</div>
+                  <h3 id="profileOptionsCurrentName">Nenhum perfil selecionado</h3>
+                </div>
+              </div>
+              <div id="profileOptionsHint" class="note-panel">Selecione um perfil no rodape para editar, ou crie um novo a partir da base conectada.</div>
+            </article>
+
+            <article class="card shell-card">
+              <div class="card-head">
+                <div>
+                  <div class="card-kicker">Novo perfil</div>
+                  <h3>Criar a partir da configuracao atual</h3>
+                </div>
+              </div>
+              <div class="field-grid">
+                <label class="field field-wide">
+                  <span>Nome do novo perfil</span>
+                  <input id="profileCreateName" type="text" maxlength="64" placeholder="meu-perfil">
+                </label>
+                <div class="inline-actions">
+                  <button id="profileCreateNew" class="app-btn primary">Criar novo perfil</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="card shell-card">
+              <div class="card-head">
+                <div>
+                  <div class="card-kicker">Perfil selecionado</div>
+                  <h3>Renomear, sobrescrever e excluir</h3>
+                </div>
+              </div>
+              <div class="field-grid">
+                <label class="field field-wide">
+                  <span>Novo nome</span>
+                  <input id="profileRenameName" type="text" maxlength="64" placeholder="novo-nome">
+                </label>
+                <div class="inline-actions">
+                  <button id="profileOptionOverwrite" class="app-btn primary">Salvar por cima do atual</button>
+                  <button id="profileOptionRename" class="app-btn secondary">Renomear</button>
+                  <button id="profileOptionOpenJson" class="app-btn secondary">Editor JSON</button>
+                  <button id="profileOptionDelete" class="app-btn shell-btn-danger">Excluir</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Perfis</div>
+            <h5 class="modal-title mb-0">Editor JSON do perfil</h5>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
@@ -95,7 +162,7 @@
           </div>
           <div class="mb-2 d-flex justify-content-between align-items-center">
             <label for="profileModalJson" class="form-label mb-0">JSON do perfil</label>
-            <small class="text-secondary">Pode ajustar metadados e valores antes de salvar.</small>
+            <small class="text-secondary">Use este modo so quando quiser editar os dados manualmente.</small>
           </div>
           <textarea id="profileModalJson" class="form-control profile-json" spellcheck="false"></textarea>
         </div>
@@ -107,13 +174,13 @@
     </div>
   </div>
 
-  <div class="modal fade" id="firmwareModal" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="firmwareModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content modal-glass">
         <div class="modal-header">
           <div>
             <div class="mini-label">Firmware</div>
-            <h5 class="modal-title mb-0">Gravar firmware por bootloader</h5>
+            <h5 class="modal-title mb-0">Wizard de gravacao por bootloader</h5>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
@@ -122,60 +189,110 @@
             <div class="col-lg-4">
               <div class="card shell-card h-100">
                 <div class="card-body">
-                  <div class="mini-label mb-2">Passo a passo</div>
-                  <ol class="tutorial-list">
-                    <li>Clique em <strong>Capturar portas</strong> para memorizar o estado atual.</li>
-                    <li>Pressione o botao vermelho da placa para entrar no bootloader.</li>
-                    <li>Clique em <strong>Detectar bootloader</strong> para achar a porta nova.</li>
-                    <li>Escolha o firmware e finalize em <strong>Gravar agora</strong>.</li>
-                  </ol>
-                  <div class="small text-secondary">O app usa `avrdude.exe` local e tenta escolher automaticamente a porta que apareceu apos o reset.</div>
+                  <div class="mini-label mb-2">Etapas</div>
+                  <div class="wizard-steps">
+                    <div id="firmwareStep1" class="wizard-step"><span>1</span><div><strong>Capturar portas</strong><small>Memorize o estado atual da USB.</small></div></div>
+                    <div id="firmwareStep2" class="wizard-step"><span>2</span><div><strong>Detectar bootloader</strong><small>Aperte o botao vermelho e avance.</small></div></div>
+                    <div id="firmwareStep3" class="wizard-step"><span>3</span><div><strong>Procurar firmware</strong><small>Escolha recursos e deixe o app comparar.</small></div></div>
+                    <div id="firmwareStep4" class="wizard-step"><span>4</span><div><strong>Armar gravacao</strong><small>O segundo toque no botao vermelho dispara o envio.</small></div></div>
+                  </div>
+                  <div id="firmwareWizardNote" class="note-panel mt-3">Comece capturando as portas atuais.</div>
                 </div>
               </div>
             </div>
 
             <div class="col-lg-8">
-              <div class="card shell-card mb-3">
-                <div class="card-body">
-                  <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-                    <button id="firmwareCaptureBaseline" class="btn btn-outline-primary btn-sm">Capturar portas</button>
-                    <button id="firmwareDetectBootloader" class="btn btn-outline-primary btn-sm">Detectar bootloader</button>
-                    <span class="badge text-bg-dark" id="firmwareBootloaderPort">Sem porta</span>
-                  </div>
-                  <div class="mini-label mb-2">Filtro por recurso</div>
-                  <div id="firmwareFeatureFilters" class="filter-grid"></div>
-                  <div class="mt-3">
-                    <button id="firmwareFindBest" class="btn btn-primary btn-sm">Buscar melhor firmware</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="card shell-card mb-3">
-                <div class="card-body">
-                  <div class="row g-3">
-                    <div class="col-lg-5">
-                      <label for="firmwareSelect" class="form-label">Firmware encontrado</label>
-                      <select id="firmwareSelect" class="form-select"></select>
-                    </div>
-                    <div class="col-lg-7">
-                      <div class="mini-label mb-2">Resumo</div>
-                      <div id="firmwareDescription" class="note-panel"></div>
+              <div id="firmwarePage1" class="wizard-page">
+                <div class="card shell-card">
+                  <div class="card-body">
+                    <div class="mini-label mb-2">Etapa 1</div>
+                    <h3 class="wizard-title">Captura da linha de base USB</h3>
+                    <div class="note-panel mb-3">Com a placa no modo normal, capture a lista atual de portas. Isso vira a referencia para detectar o bootloader depois.</div>
+                    <button id="firmwareCaptureBaseline" class="app-btn primary">Capturar portas atuais</button>
+                    <div class="port-list-shell mt-3">
+                      <div class="mini-label mb-2">Portas vistas agora</div>
+                      <div id="firmwarePortsPreview" class="port-preview-list"></div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div class="card shell-card">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="mini-label">Log de gravacao</div>
-                    <button id="firmwareProgram" class="btn btn-danger btn-sm">Gravar agora</button>
+              <div id="firmwarePage2" class="wizard-page is-hidden">
+                <div class="card shell-card">
+                  <div class="card-body">
+                    <div class="mini-label mb-2">Etapa 2</div>
+                    <h3 class="wizard-title">Deteccao do bootloader</h3>
+                    <ol class="tutorial-list">
+                      <li>Deixe este modal aberto.</li>
+                      <li>Aperte o botao vermelho da placa para entrar em bootloader.</li>
+                      <li>Clique em detectar para o app procurar a nova porta.</li>
+                    </ol>
+                    <div class="inline-actions">
+                      <button id="firmwareDetectBootloader" class="app-btn primary">Detectar bootloader agora</button>
+                    </div>
+                    <div class="metric-grid mt-3">
+                      <div class="metric-box">
+                        <span>Porta do bootloader</span>
+                        <strong id="firmwareBootloaderPort">Sem porta</strong>
+                      </div>
+                      <div class="metric-box">
+                        <span>Portas de referencia</span>
+                        <strong id="firmwareBaselineCount">0</strong>
+                      </div>
+                    </div>
                   </div>
-                  <textarea id="firmwareFlashLog" class="form-control profile-json" readonly></textarea>
+                </div>
+              </div>
+
+              <div id="firmwarePage3" class="wizard-page is-hidden">
+                <div class="card shell-card">
+                  <div class="card-body">
+                    <div class="mini-label mb-2">Etapa 3</div>
+                    <h3 class="wizard-title">Busca do firmware mais compativel</h3>
+                    <div class="note-panel mb-3">Marque os recursos desejados. Se nao existir um build perfeito, o app sugere o que cobre mais funcoes e lista o que esta faltando.</div>
+                    <div id="firmwareFeatureFilters" class="filter-grid mb-3"></div>
+                    <div class="field-grid two-col">
+                      <label class="field">
+                        <span>Melhor sugestao encontrada</span>
+                        <select id="firmwareSelect" class="form-select"></select>
+                      </label>
+                      <div class="inline-actions align-end">
+                        <button id="firmwareFindBest" class="app-btn primary">Procurar firmware</button>
+                      </div>
+                    </div>
+                    <div id="firmwareRecommendationState" class="note-panel mt-3 mb-2">Selecione as funcoes desejadas para procurar o build mais compativel.</div>
+                    <div id="firmwareDescription" class="note-panel"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="firmwarePage4" class="wizard-page is-hidden">
+                <div class="card shell-card">
+                  <div class="card-body">
+                    <div class="mini-label mb-2">Etapa 4</div>
+                    <h3 class="wizard-title">Armar gravacao automatica</h3>
+                    <div class="metric-grid mb-3">
+                      <div class="metric-box">
+                        <span>Porta preparada</span>
+                        <strong id="firmwareSummaryPort">Sem porta</strong>
+                      </div>
+                      <div class="metric-box">
+                        <span>Firmware selecionado</span>
+                        <strong id="firmwareSummaryFirmware">Nenhum</strong>
+                      </div>
+                    </div>
+                    <div class="note-panel mb-3">Quando voce clicar em armar gravacao, o app vai esperar o bootloader aparecer de novo. Entao aperte o botao vermelho mais uma vez. Assim que a porta reaparecer, o envio comeca automaticamente.</div>
+                    <textarea id="firmwareFlashLog" class="form-control profile-json" readonly></textarea>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+        <div class="modal-footer wizard-footer">
+          <button id="firmwarePrevStep" type="button" class="btn btn-outline-secondary">Retroceder</button>
+          <button id="firmwareCancel" type="button" class="btn btn-outline-secondary">Cancelar</button>
+          <button id="firmwareNextStep" type="button" class="btn btn-primary">Avancar</button>
         </div>
       </div>
     </div>

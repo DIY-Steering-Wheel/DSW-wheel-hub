@@ -8,10 +8,11 @@
         </div>
       </div>
       <div class="field-grid two-col">
-        <label class="field">
-          <span>Rotacao (graus)</span>
+        <div class="slider-row field-wide">
+          <label>Rotacao do volante (graus)</label>
+          <input id="wheelRotationDegRange" type="range" min="30" max="1800" step="1">
           <input id="wheelRotationDeg" type="number" min="30" max="1800" step="1">
-        </label>
+        </div>
         <label class="field">
           <span>Encoder CPR</span>
           <input id="wheelEncoderCpr" type="number" min="4" max="600000" step="1">
@@ -41,7 +42,6 @@
         <button id="wheelCenter" class="app-btn secondary">Recentralizar volante</button>
         <button id="wheelCalibrate" class="app-btn secondary">Recalibrar volante</button>
         <button id="wheelResetZ" class="app-btn secondary">Resetar Z-index</button>
-        <button id="wheelSaveEeprom" class="app-btn primary">Salvar na EEPROM</button>
       </div>
       <div class="note-panel">Essas acoes so liberam quando a firmware conectada suportar a operacao.</div>
     </article>

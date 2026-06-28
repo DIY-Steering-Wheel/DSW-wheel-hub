@@ -70,6 +70,22 @@ AXIS_LABELS = {
     5: "RZ",
 }
 
+OUTPUT_FREQUENCY_OPTIONS = [
+    {"index": 0, "pwm_hz": 40000, "pwm_label": "40 kHz", "rcm_hz": None, "rcm_label": "Indisponivel", "fast_resolution": 400, "phase_resolution": 200},
+    {"index": 1, "pwm_hz": 20000, "pwm_label": "20 kHz", "rcm_hz": None, "rcm_label": "Indisponivel", "fast_resolution": 800, "phase_resolution": 400},
+    {"index": 2, "pwm_hz": 16000, "pwm_label": "16 kHz", "rcm_hz": None, "rcm_label": "Indisponivel", "fast_resolution": 1000, "phase_resolution": 500},
+    {"index": 3, "pwm_hz": 8000, "pwm_label": "8 kHz", "rcm_hz": None, "rcm_label": "Indisponivel", "fast_resolution": 2000, "phase_resolution": 1000},
+    {"index": 4, "pwm_hz": 4000, "pwm_label": "4 kHz", "rcm_hz": 500, "rcm_label": "500 Hz", "fast_resolution": 4000, "phase_resolution": 2000},
+    {"index": 5, "pwm_hz": 3200, "pwm_label": "3.2 kHz", "rcm_hz": 400, "rcm_label": "400 Hz", "fast_resolution": 5000, "phase_resolution": 2500},
+    {"index": 6, "pwm_hz": 1600, "pwm_label": "1.6 kHz", "rcm_hz": 200, "rcm_label": "200 Hz", "fast_resolution": 10000, "phase_resolution": 5000},
+    {"index": 7, "pwm_hz": 976, "pwm_label": "976 Hz", "rcm_hz": 122, "rcm_label": "122 Hz", "fast_resolution": 16383, "phase_resolution": 8191},
+    {"index": 8, "pwm_hz": 800, "pwm_label": "800 Hz", "rcm_hz": 100, "rcm_label": "100 Hz", "fast_resolution": 20000, "phase_resolution": 10000},
+    {"index": 9, "pwm_hz": 488, "pwm_label": "488 Hz", "rcm_hz": 61, "rcm_label": "61 Hz", "fast_resolution": 32767, "phase_resolution": 16383},
+    {"index": 10, "pwm_hz": 533, "pwm_label": "533 Hz", "rcm_hz": 67, "rcm_label": "67 Hz", "fast_resolution": 30000, "phase_resolution": 15000},
+    {"index": 11, "pwm_hz": 400, "pwm_label": "400 Hz", "rcm_hz": 50, "rcm_label": "50 Hz", "fast_resolution": 40000, "phase_resolution": 20000},
+    {"index": 12, "pwm_hz": 244, "pwm_label": "244 Hz", "rcm_hz": 31, "rcm_label": "31 Hz", "fast_resolution": 65535, "phase_resolution": 32767},
+]
+
 FFB_COMMANDS = {
     "general_gain": "FG",
     "constant_gain": "FC",
@@ -152,6 +168,13 @@ def _translate_firmware_description(text: str) -> str:
     return translated
 
 
+def _frequency_option(index: int) -> dict[str, Any]:
+    for option in OUTPUT_FREQUENCY_OPTIONS:
+        if option["index"] == index:
+            return option
+    return OUTPUT_FREQUENCY_OPTIONS[0]
+
+
 class WheelController:
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -228,9 +251,13 @@ class WheelController:
         self.flash_state: dict[str, Any] = {
             "baseline_ports": [],
             "bootloader_port": "",
+            "detected_bootloader_port": "",
             "selected_firmware": "",
             "last_log": "",
             "busy": False,
+            "wizard_stage": "idle",
+            "armed_for_flash": False,
+            "last_missing_flags": [],
         }
         self.firmware_catalog = self._load_firmware_catalog()
         self.firmware_feature_options = self._build_firmware_feature_options()
@@ -418,6 +445,38 @@ class WheelController:
             "manual_calibration": self.manual_calibration,
         }
 
+    def _find_new_port(self, baseline: set[str], timeout_seconds: float = BOOTLOADER_DETECT_TIMEOUT) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+        deadline = time.time() + timeout_seconds
+        last_ports: list[dict[str, Any]] = []
+        while time.time() < deadline:
+            ports = self.refresh_ports(force=True)
+            last_ports = ports
+            new_ports = [item for item in ports if item["device"] not in baseline]
+            if new_ports:
+                new_ports.sort(key=lambda item: (-item["score"], item["device"]))
+                return new_ports[0], ports
+            time.sleep(0.35)
+        return None, last_ports
+
+    def _set_flash_stage(self, stage: str, message: str = "") -> None:
+        self.flash_state["wizard_stage"] = stage
+        if message:
+            self.flash_state["last_log"] = message
+
+    def _flash_command(self, firmware_path: str, port: str) -> list[str]:
+        return [
+            str(self.avrdude_path),
+            "-C",
+            str(self.avrdude_conf_path),
+            "-v",
+            "-patmega32u4",
+            "-cavr109",
+            f"-P{port}",
+            "-b57600",
+            "-D",
+            f"-Uflash:w:{firmware_path}:i",
+        ]
+
     def _push_history(self, direction: str, command: str, response: str, ok: bool) -> None:
         self._history.appendleft(
             {
@@ -532,6 +591,8 @@ class WheelController:
             self.serial_stats["tx_usage_percent"] = 0.0
             self.serial_stats["rx_usage_percent"] = 0.0
             self.flash_state["bootloader_port"] = ""
+            self.flash_state["detected_bootloader_port"] = ""
+            self.flash_state["armed_for_flash"] = False
             return {"ok": True, "message": "Porta serial fechada."}
 
     def _open_port(self, port_name: str) -> serial.Serial:
@@ -543,7 +604,10 @@ class WheelController:
         ser.inter_byte_timeout = SERIAL_TIMEOUT
         ser.rtscts = False
         ser.dsrdtr = False
-        ser.exclusive = False
+        try:
+            ser.exclusive = None
+        except (AttributeError, ValueError):
+            pass
         ser.open()
         try:
             ser.setDTR(False)
@@ -692,6 +756,8 @@ class WheelController:
             (1, 1): "rcm",
         }.get(mode_bits, "desconhecido")
         frequency_index = (value >> 2) & 0x0F
+        option = _frequency_option(frequency_index)
+        frequency_label = option["rcm_label"] if mode_label == "rcm" else option["pwm_label"]
         return {
             "uses_dac": False,
             "enabled": True,
@@ -699,7 +765,7 @@ class WheelController:
             "mode_label": mode_label,
             "phase_correct": phase_correct,
             "frequency_index": frequency_index,
-            "frequency_label": f"Index {frequency_index}",
+            "frequency_label": frequency_label,
         }
 
     def _decode_shifter_cfg(self, cfg: int) -> dict[str, bool]:
@@ -1218,21 +1284,93 @@ class WheelController:
         target.unlink()
         return {"ok": True, "message": "Perfil removido."}
 
+    def rename_profile(self, file_name: str, new_name: str) -> dict[str, Any]:
+        target = self.profile_dir / Path(file_name).name
+        if not target.exists():
+            return {"ok": False, "message": "Perfil nao encontrado."}
+
+        try:
+            payload = json.loads(target.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            return {"ok": False, "message": f"Falha ao ler perfil: {exc}"}
+
+        safe_name = _sanitize_profile_name(new_name or payload.get("name", ""))
+        if not safe_name:
+            return {"ok": False, "message": "Escolha um nome valido para o perfil."}
+
+        return self.upsert_profile(target.name, safe_name, json.dumps(payload, ensure_ascii=True))
+
+    def overwrite_profile(self, file_name: str) -> dict[str, Any]:
+        target = self.profile_dir / Path(file_name).name
+        if not target.exists():
+            return {"ok": False, "message": "Perfil nao encontrado."}
+        if not self._is_connected():
+            return {"ok": False, "message": "Conecte a base antes de sobrescrever um perfil."}
+
+        try:
+            payload = json.loads(target.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            return {"ok": False, "message": f"Falha ao ler perfil: {exc}"}
+
+        name = payload.get("name", target.stem)
+        self.load_device_snapshot()
+        updated_payload = self._build_profile_payload(name)
+        updated_payload["created_at"] = payload.get("created_at", updated_payload.get("created_at", ""))
+        return self.upsert_profile(target.name, name, json.dumps(updated_payload, ensure_ascii=True))
+
     def recommend_firmwares(self, flags: list[str]) -> dict[str, Any]:
         desired = sorted({str(flag).strip().lower() for flag in (flags or []) if str(flag).strip()})
-        matches = [
-            item
-            for item in self.firmware_catalog
-            if all(flag in item["flags"] for flag in desired)
-        ]
-        matches.sort(key=lambda item: (item["series"], len(item["flags"]), item["code"]), reverse=True)
+        ranked_matches: list[dict[str, Any]] = []
+        for item in self.firmware_catalog:
+            available = set(item["flags"])
+            matched_flags = [flag for flag in desired if flag in available]
+            missing_flags = [flag for flag in desired if flag not in available]
+            extra_flags = [flag for flag in item["flags"] if flag not in desired]
+            score = (len(matched_flags) * 1000) - (len(missing_flags) * 100) + item["series"] - len(extra_flags)
+            ranked_matches.append(
+                {
+                    **item,
+                    "matched_flags": matched_flags,
+                    "missing_flags": missing_flags,
+                    "extra_flags": extra_flags,
+                    "match_count": len(matched_flags),
+                    "missing_count": len(missing_flags),
+                    "exact": len(missing_flags) == 0,
+                    "score": score,
+                }
+            )
+
+        ranked_matches.sort(
+            key=lambda item: (
+                item["missing_count"],
+                -item["match_count"],
+                -item["series"],
+                -len(item["flags"]),
+                item["code"],
+            )
+        )
+        matches = ranked_matches[:32]
+        best = matches[0] if matches else None
         return {
             "ok": True,
-            "message": "Busca de firmware concluida." if matches else "Nenhum firmware bate com essa combinacao.",
+            "message": "Busca de firmware concluida." if matches else "Nenhum firmware foi encontrado.",
             "desired_flags": desired,
-            "best": matches[0] if matches else None,
-            "matches": matches[:32],
+            "best": best,
+            "matches": matches,
         }
+
+    def reset_flash_wizard(self) -> dict[str, Any]:
+        with self._lock:
+            self.flash_state["baseline_ports"] = []
+            self.flash_state["bootloader_port"] = ""
+            self.flash_state["detected_bootloader_port"] = ""
+            self.flash_state["selected_firmware"] = ""
+            self.flash_state["last_log"] = ""
+            self.flash_state["busy"] = False
+            self.flash_state["wizard_stage"] = "idle"
+            self.flash_state["armed_for_flash"] = False
+            self.flash_state["last_missing_flags"] = []
+        return {"ok": True, "message": "Wizard de firmware cancelado."}
 
     def capture_bootloader_baseline(self) -> dict[str, Any]:
         ports = self.refresh_ports(force=True)
@@ -1240,31 +1378,69 @@ class WheelController:
         with self._lock:
             self.flash_state["baseline_ports"] = baseline
             self.flash_state["bootloader_port"] = ""
+            self.flash_state["detected_bootloader_port"] = ""
             self.flash_state["last_log"] = ""
-        return {"ok": True, "message": "Portas base capturadas.", "ports": ports, "baseline": baseline}
+            self.flash_state["wizard_stage"] = "baseline-captured"
+            self.flash_state["armed_for_flash"] = False
+        return {"ok": True, "message": "Portas base capturadas. Agora aperte o botao vermelho e avance para detectar o bootloader.", "ports": ports, "baseline": baseline}
 
     def detect_bootloader_port(self) -> dict[str, Any]:
         baseline = set(self.flash_state.get("baseline_ports") or [])
         if not baseline:
             return {"ok": False, "message": "Capture as portas atuais antes de procurar o bootloader."}
 
-        deadline = time.time() + BOOTLOADER_DETECT_TIMEOUT
-        while time.time() < deadline:
-            ports = self.refresh_ports(force=True)
-            new_ports = [item for item in ports if item["device"] not in baseline]
-            if new_ports:
-                new_ports.sort(key=lambda item: (-item["score"], item["device"]))
-                chosen = new_ports[0]
-                with self._lock:
-                    self.flash_state["bootloader_port"] = chosen["device"]
-                return {
-                    "ok": True,
-                    "message": f"Bootloader detectado em {chosen['device']}.",
-                    "bootloader_port": chosen["device"],
-                    "ports": ports,
-                }
-            time.sleep(0.35)
-        return {"ok": False, "message": "Nenhuma nova porta apareceu. Tente entrar no bootloader de novo."}
+        chosen, ports = self._find_new_port(baseline)
+        if chosen:
+            with self._lock:
+                self.flash_state["bootloader_port"] = chosen["device"]
+                self.flash_state["detected_bootloader_port"] = chosen["device"]
+                self.flash_state["wizard_stage"] = "bootloader-detected"
+            return {
+                "ok": True,
+                "message": f"Bootloader detectado em {chosen['device']}. Agora escolha o firmware e arme a gravacao.",
+                "bootloader_port": chosen["device"],
+                "ports": ports,
+            }
+        return {"ok": False, "message": "Nenhuma nova porta apareceu. Aperte o botao vermelho e tente detectar de novo."}
+
+    def arm_and_flash_firmware(self, firmware_name: str) -> dict[str, Any]:
+        target = next((item for item in self.firmware_catalog if item["name"] == firmware_name), None)
+        if not target:
+            return {"ok": False, "message": "Firmware nao encontrado no catalogo."}
+        if not self.avrdude_path.exists() or not self.avrdude_conf_path.exists():
+            return {"ok": False, "message": "Arquivos do avrdude nao encontrados na pasta local."}
+
+        baseline_ports = [item["device"] for item in self.refresh_ports(force=True)]
+        with self._lock:
+            self.flash_state["baseline_ports"] = baseline_ports
+            self.flash_state["selected_firmware"] = firmware_name
+            self.flash_state["armed_for_flash"] = True
+            self.flash_state["busy"] = True
+            self._set_flash_stage("armed", "Gravacao armada. Aperte o botao vermelho novamente. Assim que o bootloader aparecer, a gravacao comeca sozinha.")
+
+        chosen = None
+        ports: list[dict[str, Any]] = []
+        try:
+            with self._lock:
+                self._close_serial()
+                self.diagnostics["controller_state"] = None
+                self.diagnostics["controller_state_label"] = "Desconectado"
+            chosen, ports = self._find_new_port(set(baseline_ports))
+            if not chosen:
+                return {"ok": False, "message": "O bootloader nao reapareceu a tempo. Arme de novo e pressione o botao vermelho outra vez."}
+
+            with self._lock:
+                self.flash_state["bootloader_port"] = chosen["device"]
+                self.flash_state["detected_bootloader_port"] = chosen["device"]
+                self._set_flash_stage("flashing", f"Bootloader reapareceu em {chosen['device']}. Iniciando gravacao automatica.")
+
+            return self.flash_firmware(firmware_name, chosen["device"])
+        finally:
+            with self._lock:
+                self.flash_state["armed_for_flash"] = False
+                self.flash_state["busy"] = False
+                if chosen is None and ports:
+                    self.flash_state["baseline_ports"] = [item["device"] for item in ports]
 
     def flash_firmware(self, firmware_name: str, bootloader_port: str = "") -> dict[str, Any]:
         target = next((item for item in self.firmware_catalog if item["name"] == firmware_name), None)
@@ -1278,23 +1454,15 @@ class WheelController:
             return {"ok": False, "message": "Arquivos do avrdude nao encontrados na pasta local."}
 
         self.disconnect()
-        command = [
-            str(self.avrdude_path),
-            "-C",
-            str(self.avrdude_conf_path),
-            "-v",
-            "-patmega32u4",
-            "-cavr109",
-            f"-P{port}",
-            "-b57600",
-            "-D",
-            f"-Uflash:w:{target['path']}:i",
-        ]
+        command = self._flash_command(target["path"], port)
 
         with self._lock:
             self.flash_state["busy"] = True
             self.flash_state["selected_firmware"] = firmware_name
-            self.flash_state["last_log"] = ""
+            self.flash_state["bootloader_port"] = port
+            self.flash_state["detected_bootloader_port"] = port
+            self.flash_state["last_log"] = "Bootloader confirmado em " + port + ". Gravando firmware..."
+            self.flash_state["wizard_stage"] = "flashing"
 
         try:
             completed = subprocess.run(
@@ -1309,13 +1477,18 @@ class WheelController:
             with self._lock:
                 self.flash_state["last_log"] = log.strip()
             if completed.returncode != 0:
+                with self._lock:
+                    self.flash_state["wizard_stage"] = "flash-error"
                 return {"ok": False, "message": "avrdude retornou erro durante a gravacao.", "log": log.strip()}
             self.refresh_ports(force=True)
+            with self._lock:
+                self.flash_state["wizard_stage"] = "flash-complete"
             return {"ok": True, "message": f"Firmware {firmware_name} gravado com sucesso.", "log": log.strip()}
         except subprocess.TimeoutExpired as exc:
             log = ((exc.stdout or "") + "\n" + (exc.stderr or "")).strip()
             with self._lock:
                 self.flash_state["last_log"] = log
+                self.flash_state["wizard_stage"] = "flash-timeout"
             return {"ok": False, "message": "Tempo esgotado durante a gravacao do firmware.", "log": log}
         finally:
             with self._lock:
@@ -1349,6 +1522,7 @@ class WheelController:
                 {
                     "firmware_catalog": self.firmware_catalog,
                     "firmware_feature_options": self.firmware_feature_options,
+                    "output_frequency_options": OUTPUT_FREQUENCY_OPTIONS,
                 }
             )
 
@@ -1431,8 +1605,20 @@ class WebApi:
         result = self.controller.delete_profile(file_name)
         return {**result, "data": self.controller.get_snapshot()}
 
+    def rename_profile(self, file_name: str, new_name: str) -> dict[str, Any]:
+        result = self.controller.rename_profile(file_name, new_name)
+        return {**result, "data": self.controller.get_snapshot()}
+
+    def overwrite_profile(self, file_name: str) -> dict[str, Any]:
+        result = self.controller.overwrite_profile(file_name)
+        return {**result, "data": self.controller.get_snapshot()}
+
     def recommend_firmwares(self, flags: list[str]) -> dict[str, Any]:
         result = self.controller.recommend_firmwares(flags)
+        return {**result, "data": self.controller.get_snapshot()}
+
+    def reset_flash_wizard(self) -> dict[str, Any]:
+        result = self.controller.reset_flash_wizard()
         return {**result, "data": self.controller.get_snapshot()}
 
     def capture_bootloader_baseline(self) -> dict[str, Any]:
@@ -1441,6 +1627,10 @@ class WebApi:
 
     def detect_bootloader_port(self) -> dict[str, Any]:
         result = self.controller.detect_bootloader_port()
+        return {**result, "data": self.controller.get_snapshot()}
+
+    def arm_and_flash_firmware(self, firmware_name: str) -> dict[str, Any]:
+        result = self.controller.arm_and_flash_firmware(firmware_name)
         return {**result, "data": self.controller.get_snapshot()}
 
     def flash_firmware(self, firmware_name: str, bootloader_port: str = "") -> dict[str, Any]:

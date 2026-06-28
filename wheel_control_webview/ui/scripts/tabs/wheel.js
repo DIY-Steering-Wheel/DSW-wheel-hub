@@ -2,6 +2,8 @@
   var module = {};
 
   module.bind = function (app) {
+    bindPair("wheelRotationDeg", "wheelRotationDegRange");
+
     app.byId("wheelApplyBasic").onclick = function () {
       app.callApi("update_basic_settings", [collectBasic()]);
     };
@@ -14,13 +16,11 @@
     app.byId("wheelResetZ").onclick = function () {
       app.callApi("run_action", ["reset_zindex"]);
     };
-    app.byId("wheelSaveEeprom").onclick = function () {
-      app.callApi("run_action", ["save_eeprom"]);
-    };
   };
 
   module.render = function (snapshot, app) {
     app.idleSet("wheelRotationDeg", snapshot.settings.rotation_deg);
+    app.idleSet("wheelRotationDegRange", snapshot.settings.rotation_deg);
     app.idleSet("wheelEncoderCpr", snapshot.settings.encoder_cpr);
     app.idleSet("wheelBrakePressure", snapshot.settings.brake_pressure);
     app.idleSet("wheelOutputResolution", snapshot.settings.output_resolution);
@@ -30,8 +30,18 @@
     app.byId("wheelCenter").disabled = !snapshot.connected;
     app.byId("wheelCalibrate").disabled = !snapshot.connected;
     app.byId("wheelResetZ").disabled = !snapshot.connected || !snapshot.capabilities.supports_z_reset;
-    app.byId("wheelSaveEeprom").disabled = !snapshot.connected || !snapshot.capabilities.supports_save;
   };
+
+  function bindPair(numberId, rangeId) {
+    var numberInput = window.BRWheelApp.byId(numberId);
+    var rangeInput = window.BRWheelApp.byId(rangeId);
+    numberInput.oninput = function () {
+      rangeInput.value = numberInput.value;
+    };
+    rangeInput.oninput = function () {
+      numberInput.value = rangeInput.value;
+    };
+  }
 
   function collectBasic() {
     return {
