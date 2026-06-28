@@ -1,0 +1,60 @@
+<section id="tab-connection" class="tab-page active">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Discovery</div>
+          <h3>Portas e handshake</h3>
+        </div>
+      </div>
+      <div class="field-grid">
+        <label class="field field-wide">
+          <span>Porta selecionada</span>
+          <select id="connectionPortSelect"></select>
+        </label>
+        <div class="inline-actions">
+          <button id="connectionRefreshPorts" class="app-btn secondary">Atualizar portas</button>
+          <button id="connectionRefreshSnapshot" class="app-btn secondary">Recarregar snapshot</button>
+          <button id="connectionOpenFirmware" class="app-btn primary">Gravar firmware</button>
+        </div>
+      </div>
+      <div id="connectionPortsList" class="stack-list"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Attached board</div>
+          <h3>Resumo da base</h3>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-box">
+          <span>Porta ativa</span>
+          <strong id="connectionActivePort">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>VID:PID</span>
+          <strong id="connectionVidPid">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Estado</span>
+          <strong id="connectionState">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Encoder</span>
+          <strong id="connectionEncoder">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Saida</span>
+          <strong id="connectionOutput">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Botoes</span>
+          <strong id="connectionButtons">-</strong>
+        </div>
+      </div>
+      <div id="connectionHint" class="note-panel">Conecte a base para habilitar os setores modulares do app.</div>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,59 @@
+<section id="tab-pedals" class="tab-page">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Pedals mode</div>
+          <h3>Mapa de pedais carregado</h3>
+        </div>
+      </div>
+      <div id="pedalsModePanel" class="note-panel note-panel-hero">
+        <strong id="pedalsModeTitle">Aguardando conexao</strong>
+        <p id="pedalsModeText">Conecte a serial para descobrir o mapa de pedal atual.</p>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-box">
+          <span>Brake scaling</span>
+          <strong id="pedalsBrakePressure">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Calibracao</span>
+          <strong id="pedalsCalibration">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Load cell</span>
+          <strong id="pedalsLoadCell">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>ADS1015</span>
+          <strong id="pedalsAds">-</strong>
+        </div>
+      </div>
+      <div class="inline-actions">
+        <button id="pedalsRecalibrate" class="app-btn primary">Recalibrar pedais</button>
+      </div>
+    </article>
+
+    <article id="pedalsManualCard" class="card is-hidden">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Manual calibration</div>
+          <h3>Minimos e maximos</h3>
+        </div>
+      </div>
+      <div class="field-grid two-col">
+        <label class="field"><span>Freio min</span><input id="pedalsBrakeMin" type="number" min="0" max="4095"></label>
+        <label class="field"><span>Freio max</span><input id="pedalsBrakeMax" type="number" min="0" max="4095"></label>
+        <label class="field"><span>Acelerador min</span><input id="pedalsAccelMin" type="number" min="0" max="4095"></label>
+        <label class="field"><span>Acelerador max</span><input id="pedalsAccelMax" type="number" min="0" max="4095"></label>
+        <label class="field"><span>Embreagem min</span><input id="pedalsClutchMin" type="number" min="0" max="4095"></label>
+        <label class="field"><span>Embreagem max</span><input id="pedalsClutchMax" type="number" min="0" max="4095"></label>
+        <label class="field"><span>Handbrake min</span><input id="pedalsHbrakeMin" type="number" min="0" max="4095"></label>
+        <label class="field"><span>Handbrake max</span><input id="pedalsHbrakeMax" type="number" min="0" max="4095"></label>
+      </div>
+      <div class="inline-actions">
+        <button id="pedalsApplyManual" class="app-btn primary">Aplicar calibracao manual</button>
+      </div>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,58 @@
+<section id="tab-shifter" class="tab-page">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">XY shifter</div>
+          <h3>Matriz do cambio de potenciometros</h3>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-box">
+          <span>Leitura XY</span>
+          <strong id="shifterLiveValue">0 / 0</strong>
+        </div>
+        <div class="metric-box">
+          <span>Slot estimado</span>
+          <strong id="shifterSlotValue">N</strong>
+        </div>
+      </div>
+      <div class="axis-block">
+        <div class="axis-row">
+          <span>X axis</span>
+          <div class="axis-track"><div id="shifterAxisXBar" class="axis-fill axis-fill-a"></div></div>
+        </div>
+        <div class="axis-row">
+          <span>Y axis</span>
+          <div class="axis-track"><div id="shifterAxisYBar" class="axis-fill axis-fill-b"></div></div>
+        </div>
+      </div>
+      <div id="shifterGearMatrix" class="gear-grid"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Calibration</div>
+          <h3>Faixas e comportamento</h3>
+        </div>
+      </div>
+      <div class="field-grid two-col">
+        <label class="field"><span>A</span><input id="shifterCalA" type="number" min="0" max="1023"></label>
+        <label class="field"><span>B</span><input id="shifterCalB" type="number" min="0" max="1023"></label>
+        <label class="field"><span>C</span><input id="shifterCalC" type="number" min="0" max="1023"></label>
+        <label class="field"><span>D</span><input id="shifterCalD" type="number" min="0" max="1023"></label>
+        <label class="field field-wide"><span>E</span><input id="shifterCalE" type="number" min="0" max="1023"></label>
+      </div>
+      <div class="field-grid two-col">
+        <label class="toggle-row"><input id="shifterCfgReverse" type="checkbox"><span>Reverse invertido</span></label>
+        <label class="toggle-row"><input id="shifterCfgGear8" type="checkbox"><span>Modo 8 marchas</span></label>
+        <label class="toggle-row"><input id="shifterCfgInvertX" type="checkbox"><span>Inverter eixo X</span></label>
+        <label class="toggle-row"><input id="shifterCfgInvertY" type="checkbox"><span>Inverter eixo Y</span></label>
+      </div>
+      <div class="inline-actions">
+        <button id="shifterApplyConfig" class="app-btn primary">Aplicar calibracao do cambio</button>
+      </div>
+    </article>
+  </div>
+</section>

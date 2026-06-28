@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BR Wheel Control Aero</title>
+  <link rel="stylesheet" href="../bootstrap-5.3.0-dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../bootstrap-icons-1.13.1/bootstrap-icons.css">
+  <link rel="stylesheet" href="../ui/styles/base.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="shell-sidebar">
+      <div class="sidebar-status card glass-card">
+        <div class="mini-label">Base</div>
+        <div class="status-stack">
+          <div>
+            <span class="mini-caption">Firmware</span>
+            <strong id="sidebarFirmware">-</strong>
+          </div>
+          <div>
+            <span class="mini-caption">Placa</span>
+            <strong id="sidebarBoard">-</strong>
+          </div>
+          <div>
+            <span class="mini-caption">Status</span>
+            <strong id="sidebarStatus">Offline</strong>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav flex-column nav-pills gap-2 sidebar-nav">
+        <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Connection</span></button>
+        <button class="nav-tab btn" data-tab="about"><i class="bi bi-info-circle"></i><span>About</span></button>
+        <button class="nav-tab btn is-locked" data-tab="wheel" disabled><i class="bi bi-disc"></i><span>Volante</span></button>
+        <button class="nav-tab btn is-locked" data-tab="ffb" disabled><i class="bi bi-lightning-charge"></i><span>Force Feedback</span></button>
+        <button class="nav-tab btn is-locked" data-tab="pedals" disabled><i class="bi bi-sliders2-vertical"></i><span>Pedais</span></button>
+        <button class="nav-tab btn is-locked is-hidden" data-tab="shifter" disabled><i class="bi bi-grid-3x3-gap"></i><span>Cambio XY</span></button>
+        <button class="nav-tab btn is-locked" data-tab="serial" disabled><i class="bi bi-terminal"></i><span>Serial</span></button>
+      </nav>
+    </aside>
+
+    <main class="shell-main">
+      <section class="content-area">
+        <!-- TAB:connection -->
+        <!-- TAB:about -->
+        <!-- TAB:wheel -->
+        <!-- TAB:ffb -->
+        <!-- TAB:pedals -->
+        <!-- TAB:shifter -->
+        <!-- TAB:serial -->
+      </section>
+
+      <footer class="dock-bar glass-card">
+        <div class="dock-group dock-group-left">
+          <select id="dockPortSelect" class="form-select form-select-sm"></select>
+          <button id="dockRefreshPorts" class="btn btn-sm btn-outline-light shell-btn"><i class="bi bi-arrow-repeat"></i></button>
+          <button id="dockConnect" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
+          <button id="dockDisconnect" class="btn btn-sm shell-btn">Desconectar</button>
+        </div>
+
+        <div class="dock-group dock-group-center">
+          <span id="dockStatus" class="badge text-bg-secondary">Offline</span>
+          <span class="dock-stat"><small>TX</small><strong id="dockTx">0%</strong></span>
+          <span class="dock-stat"><small>RX</small><strong id="dockRx">0%</strong></span>
+          <span class="dock-stat"><small>CMD</small><strong id="dockCmd">0</strong></span>
+        </div>
+
+        <div class="dock-group dock-group-right">
+          <select id="dockProfileSelect" class="form-select form-select-sm"></select>
+          <button id="dockProfileSave" class="btn btn-sm shell-btn">Salvar atual</button>
+          <button id="dockProfileEdit" class="btn btn-sm shell-btn">Editar</button>
+          <button id="dockLoadProfile" class="btn btn-sm shell-btn">Carregar</button>
+          <button id="dockDeleteProfile" class="btn btn-sm shell-btn shell-btn-danger"><i class="bi bi-trash3"></i></button>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Perfis</div>
+            <h5 class="modal-title mb-0">Editor de perfil</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <input id="profileModalFile" type="hidden">
+          <div class="mb-3">
+            <label for="profileModalName" class="form-label">Nome do perfil</label>
+            <input id="profileModalName" class="form-control" type="text" maxlength="64">
+          </div>
+          <div class="mb-2 d-flex justify-content-between align-items-center">
+            <label for="profileModalJson" class="form-label mb-0">JSON do perfil</label>
+            <small class="text-secondary">Pode ajustar metadados e valores antes de salvar.</small>
+          </div>
+          <textarea id="profileModalJson" class="form-control profile-json" spellcheck="false"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button id="profileModalSave" type="button" class="btn btn-primary">Salvar perfil</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="firmwareModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Firmware</div>
+            <h5 class="modal-title mb-0">Gravar firmware por bootloader</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-lg-4">
+              <div class="card shell-card h-100">
+                <div class="card-body">
+                  <div class="mini-label mb-2">Passo a passo</div>
+                  <ol class="tutorial-list">
+                    <li>Clique em <strong>Capturar portas</strong> para memorizar o estado atual.</li>
+                    <li>Pressione o botao vermelho da placa para entrar no bootloader.</li>
+                    <li>Clique em <strong>Detectar bootloader</strong> para achar a porta nova.</li>
+                    <li>Escolha o firmware e finalize em <strong>Gravar agora</strong>.</li>
+                  </ol>
+                  <div class="small text-secondary">O app usa `avrdude.exe` local e tenta escolher automaticamente a porta que apareceu apos o reset.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-8">
+              <div class="card shell-card mb-3">
+                <div class="card-body">
+                  <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                    <button id="firmwareCaptureBaseline" class="btn btn-outline-primary btn-sm">Capturar portas</button>
+                    <button id="firmwareDetectBootloader" class="btn btn-outline-primary btn-sm">Detectar bootloader</button>
+                    <span class="badge text-bg-dark" id="firmwareBootloaderPort">Sem porta</span>
+                  </div>
+                  <div class="mini-label mb-2">Filtro por recurso</div>
+                  <div id="firmwareFeatureFilters" class="filter-grid"></div>
+                  <div class="mt-3">
+                    <button id="firmwareFindBest" class="btn btn-primary btn-sm">Buscar melhor firmware</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card shell-card mb-3">
+                <div class="card-body">
+                  <div class="row g-3">
+                    <div class="col-lg-5">
+                      <label for="firmwareSelect" class="form-label">Firmware encontrado</label>
+                      <select id="firmwareSelect" class="form-select"></select>
+                    </div>
+                    <div class="col-lg-7">
+                      <div class="mini-label mb-2">Resumo</div>
+                      <div id="firmwareDescription" class="note-panel"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card shell-card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="mini-label">Log de gravacao</div>
+                    <button id="firmwareProgram" class="btn btn-danger btn-sm">Gravar agora</button>
+                  </div>
+                  <textarea id="firmwareFlashLog" class="form-control profile-json" readonly></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../bootstrap-5.3.0-dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../ui/scripts/app-shell.js"></script>
+  <script src="../ui/scripts/tabs/connection.js"></script>
+  <script src="../ui/scripts/tabs/about.js"></script>
+  <script src="../ui/scripts/tabs/wheel.js"></script>
+  <script src="../ui/scripts/tabs/ffb.js"></script>
+  <script src="../ui/scripts/tabs/pedals.js"></script>
+  <script src="../ui/scripts/tabs/shifter.js"></script>
+  <script src="../ui/scripts/tabs/serial.js"></script>
+</body>
+</html>

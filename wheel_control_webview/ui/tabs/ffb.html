@@ -1,0 +1,84 @@
+<section id="tab-ffb" class="tab-page">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Force gains</div>
+          <h3>Ganhos de Force Feedback</h3>
+        </div>
+      </div>
+      <div class="slider-grid">
+        <div class="slider-row"><label>Geral</label><input id="ffbGeneralRange" type="range" min="0" max="200" step="1"><input id="ffbGeneral" type="number" min="0" max="200"></div>
+        <div class="slider-row"><label>Constante</label><input id="ffbConstantRange" type="range" min="0" max="200" step="1"><input id="ffbConstant" type="number" min="0" max="200"></div>
+        <div class="slider-row"><label>Damper</label><input id="ffbDamperRange" type="range" min="0" max="200" step="1"><input id="ffbDamper" type="number" min="0" max="200"></div>
+        <div class="slider-row"><label>Friction</label><input id="ffbFrictionRange" type="range" min="0" max="200" step="1"><input id="ffbFriction" type="number" min="0" max="200"></div>
+        <div class="slider-row"><label>Periodic</label><input id="ffbPeriodicRange" type="range" min="0" max="200" step="1"><input id="ffbPeriodic" type="number" min="0" max="200"></div>
+        <div class="slider-row"><label>Spring</label><input id="ffbSpringRange" type="range" min="0" max="200" step="1"><input id="ffbSpring" type="number" min="0" max="200"></div>
+        <div class="slider-row"><label>Inertia</label><input id="ffbInertiaRange" type="range" min="0" max="200" step="1"><input id="ffbInertia" type="number" min="0" max="200"></div>
+        <div class="slider-row"><label>Auto-center</label><input id="ffbCenterRange" type="range" min="0" max="200" step="1"><input id="ffbCenter" type="number" min="0" max="200"></div>
+        <div class="slider-row"><label>End stop</label><input id="ffbStopRange" type="range" min="0" max="200" step="1"><input id="ffbStop" type="number" min="0" max="200"></div>
+        <div class="slider-row"><label>Min torque</label><input id="ffbMinTorqueRange" type="range" min="0" max="200" step="1"><input id="ffbMinTorque" type="number" min="0" max="200"></div>
+      </div>
+      <div class="inline-actions">
+        <button id="ffbApplyGains" class="app-btn primary">Aplicar ganhos FFB</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Output + byte E</div>
+          <h3>Saida e desktop effects</h3>
+        </div>
+      </div>
+      <div class="field-grid two-col">
+        <label id="ffbOutputEnabledField" class="toggle-row field-wide">
+          <input id="ffbOutputEnabled" type="checkbox">
+          <span>Saida DAC habilitada</span>
+        </label>
+        <label class="field">
+          <span>Modo</span>
+          <select id="ffbOutputMode">
+            <option value="pwm+-">pwm+-</option>
+            <option value="pwm0-50-100">pwm0-50-100</option>
+            <option value="pwm+dir">pwm+dir</option>
+            <option value="rcm">rcm</option>
+            <option value="0">dac+-</option>
+            <option value="1">dac0-50-100</option>
+            <option value="2">dac+dir</option>
+          </select>
+        </label>
+        <label id="ffbOutputFrequencyField" class="field">
+          <span>Indice de frequencia</span>
+          <select id="ffbOutputFrequency"></select>
+        </label>
+        <label id="ffbOutputPhaseField" class="toggle-row field-wide">
+          <input id="ffbOutputPhase" type="checkbox">
+          <span>Phase correct</span>
+        </label>
+      </div>
+      <div class="field-grid two-col">
+        <label class="toggle-row"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Auto-center spring</span></label>
+        <label class="toggle-row"><input id="ffbDesktopDamper" type="checkbox"><span>Damper</span></label>
+        <label class="toggle-row"><input id="ffbDesktopInertia" type="checkbox"><span>Inertia</span></label>
+        <label class="toggle-row"><input id="ffbDesktopFriction" type="checkbox"><span>Friction</span></label>
+        <label class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial</span></label>
+        <label class="field field-wide">
+          <span>Eixo FFB</span>
+          <select id="ffbDesktopAxis">
+            <option value="0">X</option>
+            <option value="1">Y</option>
+            <option value="2">Z</option>
+            <option value="3">RX</option>
+            <option value="4">RY</option>
+            <option value="5">RZ</option>
+          </select>
+        </label>
+      </div>
+      <div class="inline-actions">
+        <button id="ffbApplyOutput" class="app-btn secondary">Aplicar saida</button>
+        <button id="ffbApplyDesktop" class="app-btn primary">Aplicar byte E</button>
+      </div>
+    </article>
+  </div>
+</section>

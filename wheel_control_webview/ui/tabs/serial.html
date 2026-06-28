@@ -1,0 +1,32 @@
+<section id="tab-serial" class="tab-page">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Raw command</div>
+          <h3>Console direto</h3>
+        </div>
+      </div>
+      <div class="field-grid">
+        <label class="field field-wide">
+          <span>Comando</span>
+          <input id="serialRawInput" type="text" placeholder="Ex.: U, V, FG 120, HG, YR, W 9">
+        </label>
+      </div>
+      <div class="inline-actions">
+        <button id="serialRawSend" class="app-btn primary">Enviar</button>
+      </div>
+      <div id="serialFeedback" class="note-panel">Pronto para enviar comandos depois da conexao.</div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Traffic</div>
+          <h3>Historico TX / RX</h3>
+        </div>
+      </div>
+      <div id="serialHistory" class="stack-list"></div>
+    </article>
+  </div>
+</section>

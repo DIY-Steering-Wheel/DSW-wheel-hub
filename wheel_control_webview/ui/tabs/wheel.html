@@ -1,0 +1,49 @@
+<section id="tab-wheel" class="tab-page">
+  <div class="page-grid two-col">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Wheel core</div>
+          <h3>Geometria e encoder</h3>
+        </div>
+      </div>
+      <div class="field-grid two-col">
+        <label class="field">
+          <span>Rotacao (graus)</span>
+          <input id="wheelRotationDeg" type="number" min="30" max="1800" step="1">
+        </label>
+        <label class="field">
+          <span>Encoder CPR</span>
+          <input id="wheelEncoderCpr" type="number" min="4" max="600000" step="1">
+        </label>
+        <label class="field">
+          <span id="wheelBrakePressureLabel">Brake scaling</span>
+          <input id="wheelBrakePressure" type="number" min="1" max="255" step="1">
+        </label>
+        <label class="field">
+          <span>Resolucao de saida</span>
+          <input id="wheelOutputResolution" type="text" readonly>
+        </label>
+      </div>
+      <div class="inline-actions">
+        <button id="wheelApplyBasic" class="app-btn primary">Aplicar parametros basicos</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-kicker">Wheel actions</div>
+          <h3>Acoes do volante</h3>
+        </div>
+      </div>
+      <div class="button-stack">
+        <button id="wheelCenter" class="app-btn secondary">Recentralizar volante</button>
+        <button id="wheelCalibrate" class="app-btn secondary">Recalibrar volante</button>
+        <button id="wheelResetZ" class="app-btn secondary">Resetar Z-index</button>
+        <button id="wheelSaveEeprom" class="app-btn primary">Salvar na EEPROM</button>
+      </div>
+      <div class="note-panel">Essas acoes so liberam quando a firmware conectada suportar a operacao.</div>
+    </article>
+  </div>
+</section>
