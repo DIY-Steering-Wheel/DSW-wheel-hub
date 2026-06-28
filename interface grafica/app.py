@@ -53,7 +53,7 @@ def main() -> None:
         preferred_gui = "edgechromium"
 
     window_options = {
-        "title": "DSW Wheel Hub",
+        "title": "DSW Wheel Hub By Valdemir",
         "url": index_path.as_uri(),
         "js_api": api,
         "width": 1440,

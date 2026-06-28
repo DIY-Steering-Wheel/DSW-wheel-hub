@@ -9,14 +9,24 @@
 
   module.render = function (snapshot, app) {
     var wrap = app.byId("serialHistory");
+    var feedback = app.byId("serialFeedback");
     var index;
     app.clearChildren(wrap);
+
+    if (snapshot.connected) {
+      app.setText("serialFeedback", "Conectado. Envie comandos diretos ao dispositivo.", "");
+      feedback.className = "note-panel";
+    } else {
+      app.setText("serialFeedback", "Desconectado. Conecte o dispositivo para ativar o console.", "");
+      feedback.className = "note-panel note-panel-warning";
+    }
 
     if (!snapshot.history.length) {
       addItem(wrap, "Ainda nao ha historico de comandos nesta sessao.", "");
     } else {
       for (index = 0; index < snapshot.history.length && index < 24; index += 1) {
-        addItem(wrap, snapshot.history[index].command + " -> " + app.text(snapshot.history[index].response, "(sem resposta)"), snapshot.history[index].time);
+        var entry = snapshot.history[index];
+        addItem(wrap, entry.command + " → " + app.text(entry.response, "(sem resposta)"), entry.time);
       }
     }
 

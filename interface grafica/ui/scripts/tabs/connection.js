@@ -3,7 +3,8 @@
   var wiringState = {
     selectedFile: "",
     zoom: 1,
-    imagesOnly: true
+    imagesOnly: true,
+    search: ""
   };
 
   module.bind = function (app) {
@@ -44,6 +45,12 @@
 
     app.byId("wiringImagesOnly").onchange = function () {
       wiringState.imagesOnly = !!this.checked;
+      ensureWiringSelection(app);
+      renderWiringModal(app);
+    };
+
+    app.byId("wiringSearch").oninput = function () {
+      wiringState.search = this.value || "";
       ensureWiringSelection(app);
       renderWiringModal(app);
     };
@@ -143,11 +150,17 @@
 
   function availableWirings(app) {
     var items = (app.state.staticData && app.state.staticData.wiring_files) || [];
-    if (!wiringState.imagesOnly) {
+    if (wiringState.imagesOnly) {
+      items = items.filter(function (item) {
+        return item.preview_type === "image";
+      });
+    }
+    var query = (wiringState.search || "").trim().toLowerCase();
+    if (!query) {
       return items;
     }
     return items.filter(function (item) {
-      return item.preview_type === "image";
+      return item.title.toLowerCase().indexOf(query) !== -1 || item.file.toLowerCase().indexOf(query) !== -1;
     });
   }
 
@@ -183,6 +196,7 @@
 
   function renderWiringModal(app) {
     window.BRWheelApp.idleCheck("wiringImagesOnly", wiringState.imagesOnly);
+    window.BRWheelApp.idleSet("wiringSearch", wiringState.search);
     renderWiringList(app);
     renderWiringPreview(app);
   }
@@ -191,6 +205,7 @@
     var wrap = app.byId("wiringList");
     var items = availableWirings(app);
     var index;
+    var scrollTop = wrap ? wrap.scrollTop : 0;
     app.clearChildren(wrap);
     if (!items.length) {
       var empty = document.createElement("div");
@@ -203,6 +218,9 @@
     for (index = 0; index < items.length; index += 1) {
       wrap.appendChild(buildWiringListItem(items[index], app));
     }
+    if (wrap) {
+      wrap.scrollTop = scrollTop;
+    }
   }
 
   function buildWiringListItem(item, app) {
@@ -213,6 +231,9 @@
     button.className = "wiring-list-item" + (item.file === wiringState.selectedFile ? " active" : "");
     title.textContent = item.title;
     meta.textContent = (item.extension || "").replace(".", "").toUpperCase() + (item.preview_available ? " - preview interno" : " - abrir externo");
+    if (item.extension === ".json") {
+      meta.textContent = "JSON - abrir externamente";
+    }
     button.appendChild(title);
     button.appendChild(meta);
     button.onclick = function () {

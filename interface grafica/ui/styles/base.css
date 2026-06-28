@@ -960,16 +960,26 @@ input[type="range"]::-moz-range-thumb {
   color: var(--muted);
 }
 
-.wiring-preview-shell {
-  height: calc(66vh - 70px);
-  overflow: auto;
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  background: linear-gradient(180deg, rgba(247, 251, 254, 0.86) 0%, rgba(229, 239, 246, 0.7) 100%);
-}
+  .wiring-search-wrapper {
+    margin: 12px 0 0;
+  }
 
-.wiring-preview-empty,
+  .wiring-search-input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(116, 146, 171, 0.24);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--text);
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  }
+
+  .wiring-search-input:focus {
+    outline: none;
+    border-color: rgba(255, 181, 147, 0.8);
+    box-shadow: 0 0 0 4px rgba(255, 181, 147, 0.12);
+  }
+
 .wiring-preview-message {
   display: grid;
   place-items: center;

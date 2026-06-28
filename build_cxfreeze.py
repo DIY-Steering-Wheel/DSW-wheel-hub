@@ -44,7 +44,7 @@ for optional_dir in [ROOT / "resources", APP_DIR / "wirings", ROOT / "wirings"]:
 
 build_exe_options = {
     "packages": ["serial", "webview"],
-    "includes": ["ctypes", "json", "tempfile"],
+    "includes": ["ctypes", "json", "tempfile", "webview.platforms", "webview.platforms.edgechromium"],
     "include_files": include_files,
     "include_msvcr": True,
     "excludes": ["tkinter", "unittest"],

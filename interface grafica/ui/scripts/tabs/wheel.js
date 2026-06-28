@@ -147,35 +147,60 @@
 
     app.clearChildren(axesWrap);
     (monitor.axes || []).forEach(function (axis) {
-      var row = document.createElement("div");
-      var label = document.createElement("span");
-      var track = document.createElement("div");
-      var fill = document.createElement("div");
-      row.className = "device-axis-row";
-      label.textContent = axis.label + " (" + axis.value + "%)";
-      track.className = "device-axis-track";
-      fill.className = "device-axis-fill";
-      fill.style.width = Math.max(0, Math.min(100, Number(axis.value || 0))) + "%";
-      track.appendChild(fill);
-      row.appendChild(label);
-      row.appendChild(track);
-      axesWrap.appendChild(row);
+      axesWrap.appendChild(buildAxisGauge(axis));
     });
 
     app.clearChildren(buttonsWrap);
-    (monitor.buttons_pressed || []).forEach(function (buttonId) {
-      var badge = document.createElement("span");
-      badge.className = "badge";
-      badge.textContent = "B" + buttonId;
-      buttonsWrap.appendChild(badge);
-      labels.push("B" + buttonId);
-    });
-    if (!labels.length) {
+    if ((monitor.buttons_pressed || []).length) {
+      (monitor.buttons_pressed || []).forEach(function (buttonId) {
+        buttonsWrap.appendChild(buildButtonBadge(buttonId));
+        labels.push("B" + buttonId);
+      });
+    } else {
       var note = document.createElement("div");
       note.className = "note";
       note.textContent = "Nenhum botao pressionado no momento.";
       buttonsWrap.appendChild(note);
     }
+  }
+
+  function buildAxisGauge(axis) {
+    var value = Math.max(0, Math.min(100, Number(axis.value || 0)));
+    var card = document.createElement("div");
+    card.className = "device-axis-card";
+
+    var title = document.createElement("strong");
+    title.className = "device-axis-card-title";
+    title.textContent = axis.label;
+
+    var gauge = document.createElement("div");
+    gauge.className = "device-axis-gauge";
+
+    var face = document.createElement("div");
+    face.className = "device-axis-gauge-face";
+
+    var pointer = document.createElement("div");
+    pointer.className = "device-axis-gauge-pointer";
+    pointer.style.transform = "rotate(" + (value * 1.8 - 90) + "deg)";
+
+    face.appendChild(pointer);
+    gauge.appendChild(face);
+
+    var meta = document.createElement("div");
+    meta.className = "device-axis-card-value";
+    meta.textContent = value.toFixed(0) + "%";
+
+    card.appendChild(title);
+    card.appendChild(gauge);
+    card.appendChild(meta);
+    return card;
+  }
+
+  function buildButtonBadge(buttonId) {
+    var badge = document.createElement("span");
+    badge.className = "device-button-badge";
+    badge.textContent = "B" + buttonId;
+    return badge;
   }
 
   window.BRWheelApp.registerTab("wheel", module);

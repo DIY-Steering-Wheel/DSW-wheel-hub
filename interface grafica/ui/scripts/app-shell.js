@@ -618,10 +618,17 @@
     var snapshot = app.state.snapshot || { flash_state: {} };
     var select = byId("firmwareSelect");
     var pool = currentFirmwarePool();
-    var selected = preferredName || (select ? select.value : "");
+    var selected = "";
     var index;
+    var matched = false;
     if (!select) {
       return;
+    }
+
+    if (preferredName) {
+      selected = preferredName;
+    } else if (select.value) {
+      selected = select.value;
     }
 
     clearChildren(select);
@@ -632,12 +639,20 @@
     }
 
     for (index = 0; index < pool.length; index += 1) {
+      var isSelected = pool[index].name === selected;
+      if (isSelected) {
+        matched = true;
+      }
       appendOption(
         select,
         pool[index].name,
         pool[index].code + " - " + pool[index].folder,
-        pool[index].name === selected || (!selected && index === 0)
+        isSelected
       );
+    }
+
+    if (!matched) {
+      select.value = pool[0].name;
     }
 
     renderFirmwareDescription(snapshot, findFirmwareRecord(select.value) || pool[0]);

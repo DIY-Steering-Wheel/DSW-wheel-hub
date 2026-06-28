@@ -52,7 +52,6 @@
     var wrap = app.byId("aboutSummaryMeta");
     var metrics = [
       { label: "Versao", value: "v" + version },
-      { label: "Firmware", value: app.text(snapshot.firmware.version, "-") },
       { label: "Placa", value: app.text(snapshot.capabilities.board_family, "-") },
       { label: "Conexao", value: snapshot.connected ? "Online" : "Offline" }
     ];
@@ -96,8 +95,8 @@
   function renderProjectInfo(snapshot, app) {
     var wrap = app.byId("aboutProjectInfo");
     var info = [
-      "Repositorio: " + githubUrl,
-      "Firmware atual: " + app.text(snapshot.firmware.version, "nao identificado"),
+      "Base: " + app.text(snapshot.capabilities.board_family, "-"),
+      "Status: " + (snapshot.connected ? "Online" : "Offline"),
       "Flags detectadas: " + ((snapshot.capabilities.flag_titles || []).length ? snapshot.capabilities.flag_titles.join(", ") : "nenhuma"),
       "Saida FFB: " + app.text(snapshot.capabilities.output, "-"),
       "Encoder: " + app.text(snapshot.capabilities.encoder, "-")

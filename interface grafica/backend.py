@@ -614,6 +614,8 @@ class WheelController:
             return "image"
         if suffix == ".pdf":
             return "pdf"
+        if suffix == ".json":
+            return "json"
         return "unsupported"
 
     def _wiring_title(self, path: Path) -> str:
