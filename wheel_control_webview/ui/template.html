@@ -11,27 +11,9 @@
 <body>
   <div class="shell">
     <aside class="shell-sidebar">
-      <div class="sidebar-status card glass-card">
-        <div class="mini-label">Base</div>
-        <div class="status-stack">
-          <div>
-            <span class="mini-caption">Firmware</span>
-            <strong id="sidebarFirmware">-</strong>
-          </div>
-          <div>
-            <span class="mini-caption">Placa</span>
-            <strong id="sidebarBoard">-</strong>
-          </div>
-          <div>
-            <span class="mini-caption">Status</span>
-            <strong id="sidebarStatus">Offline</strong>
-          </div>
-        </div>
-      </div>
-
       <nav class="nav flex-column nav-pills gap-2 sidebar-nav">
-        <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Connection</span></button>
-        <button class="nav-tab btn" data-tab="about"><i class="bi bi-shield-check"></i><span>Bolt</span></button>
+        <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Conexao</span></button>
+        <button class="nav-tab btn" data-tab="about"><i class="bi bi-shield-check"></i><span>About</span></button>
         <button class="nav-tab btn is-locked" data-tab="wheel" disabled><i class="bi bi-disc"></i><span>Volante</span></button>
         <button class="nav-tab btn is-locked" data-tab="ffb" disabled><i class="bi bi-lightning-charge"></i><span>Force Feedback</span></button>
         <button class="nav-tab btn is-locked" data-tab="pedals" disabled><i class="bi bi-sliders2-vertical"></i><span>Pedais</span></button>
@@ -51,28 +33,29 @@
         <!-- TAB:serial -->
       </section>
 
-      <footer class="dock-bar glass-card">
-        <div class="dock-group dock-group-left">
-          <select id="dockPortSelect" class="form-select form-select-sm"></select>
-          <button id="dockRefreshPorts" class="btn btn-sm btn-outline-light shell-btn" title="Atualizar portas"><i class="bi bi-arrow-repeat"></i></button>
-          <button id="dockConnect" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
-          <button id="dockDisconnect" class="btn btn-sm shell-btn">Desconectar</button>
-        </div>
-
-        <div class="dock-group dock-group-center">
-          <span id="dockStatus" class="badge text-bg-secondary">Offline</span>
-          <span class="dock-stat"><small>TX</small><strong id="dockTx">0%</strong></span>
-          <span class="dock-stat"><small>RX</small><strong id="dockRx">0%</strong></span>
-          <span class="dock-stat"><small>CMD</small><strong id="dockCmd">0</strong></span>
-          <button id="dockSaveEeprom" class="btn btn-sm shell-btn">Salvar EEPROM</button>
-        </div>
-
-        <div class="dock-group dock-group-right">
-          <select id="dockProfileSelect" class="form-select form-select-sm"></select>
-          <button id="dockProfileEdit" class="btn btn-sm shell-btn shell-icon-btn" title="Opcoes de perfil"><i class="bi bi-gear"></i></button>
-        </div>
-      </footer>
     </main>
+
+    <footer class="dock-bar glass-card">
+      <div class="dock-group dock-group-left">
+        <select id="dockPortSelect" class="form-select form-select-sm"></select>
+        <button id="dockRefreshPorts" class="btn btn-sm btn-outline-light shell-btn" title="Atualizar portas"><i class="bi bi-arrow-repeat"></i></button>
+        <button id="dockConnect" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
+        <button id="dockDisconnect" class="btn btn-sm shell-btn">Desconectar</button>
+      </div>
+
+      <div class="dock-group dock-group-center">
+        <span id="dockStatus" class="badge text-bg-secondary">Offline</span>
+        <span class="dock-stat"><small>TX</small><strong id="dockTx">0%</strong></span>
+        <span class="dock-stat"><small>RX</small><strong id="dockRx">0%</strong></span>
+        <span class="dock-stat"><small>CMD</small><strong id="dockCmd">0</strong></span>
+        <button id="dockSaveEeprom" class="btn btn-sm shell-btn">Salvar EEPROM</button>
+      </div>
+
+      <div class="dock-group dock-group-right">
+        <select id="dockProfileSelect" class="form-select form-select-sm"></select>
+        <button id="dockProfileEdit" class="btn btn-sm shell-btn shell-icon-btn" title="Opcoes de perfil"><i class="bi bi-gear"></i></button>
+      </div>
+    </footer>
   </div>
 
   <div class="modal fade" id="profileOptionsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -206,7 +189,13 @@
                 <div class="card shell-card">
                   <div class="card-body">
                     <div class="mini-label mb-2">Etapa 1</div>
-                    <h3 class="wizard-title">Captura da linha de base USB</h3>
+                    <h3 class="wizard-title">Escolha da placa e captura USB</h3>
+                    <div class="field-grid mb-3">
+                      <label class="field field-wide">
+                        <span>Qual Arduino sera gravado</span>
+                        <select id="firmwareBoardSelect" class="form-select"></select>
+                      </label>
+                    </div>
                     <div class="note-panel mb-3">Com a placa no modo normal, capture a lista atual de portas. Isso vira a referencia para detectar o bootloader depois.</div>
                     <button id="firmwareCaptureBaseline" class="app-btn primary">Capturar portas atuais</button>
                     <div class="port-list-shell mt-3">
@@ -293,6 +282,68 @@
           <button id="firmwarePrevStep" type="button" class="btn btn-outline-secondary">Retroceder</button>
           <button id="firmwareCancel" type="button" class="btn btn-outline-secondary">Cancelar</button>
           <button id="firmwareNextStep" type="button" class="btn btn-primary">Avancar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="ffbOutputModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Force Feedback</div>
+            <h5 class="modal-title mb-0">Saida e mapeamento</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="field-grid two-col">
+            <label id="ffbOutputEnabledField" class="toggle-row field-wide">
+              <input id="ffbOutputEnabled" type="checkbox">
+              <span>Saida DAC habilitada</span>
+            </label>
+            <label class="field">
+              <span>Modo de saida</span>
+              <select id="ffbOutputMode">
+                <option value="pwm+-">pwm+-</option>
+                <option value="pwm0-50-100">pwm0-50-100</option>
+                <option value="pwm+dir">pwm+dir</option>
+                <option value="rcm">rcm</option>
+                <option value="0">dac+-</option>
+                <option value="1">dac0-50-100</option>
+                <option value="2">dac+dir</option>
+              </select>
+            </label>
+            <label id="ffbOutputFrequencyField" class="field">
+              <span>Frequencia PWM / RCM</span>
+              <select id="ffbOutputFrequency"></select>
+            </label>
+            <label id="ffbOutputPhaseField" class="toggle-row field-wide">
+              <input id="ffbOutputPhase" type="checkbox">
+              <span>Phase correct</span>
+            </label>
+            <label class="toggle-row"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Auto-center spring</span></label>
+            <label class="toggle-row"><input id="ffbDesktopDamper" type="checkbox"><span>Damper</span></label>
+            <label class="toggle-row"><input id="ffbDesktopInertia" type="checkbox"><span>Inertia</span></label>
+            <label class="toggle-row"><input id="ffbDesktopFriction" type="checkbox"><span>Friction</span></label>
+            <label class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial</span></label>
+            <label class="field field-wide">
+              <span>Eixo FFB</span>
+              <select id="ffbDesktopAxis">
+                <option value="0">X</option>
+                <option value="1">Y</option>
+                <option value="2">Z</option>
+                <option value="3">RX</option>
+                <option value="4">RY</option>
+                <option value="5">RZ</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="ffbApplyOutput" class="btn btn-outline-secondary">Aplicar saida</button>
+          <button id="ffbApplyDesktop" class="btn btn-primary">Aplicar byte E</button>
         </div>
       </div>
     </div>

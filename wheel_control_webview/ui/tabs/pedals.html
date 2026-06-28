@@ -38,21 +38,69 @@
       <div class="card-head">
         <div>
           <div class="card-kicker">Manual calibration</div>
-          <h3>Minimos e maximos</h3>
+          <h3>Minimos e maximos por pedal</h3>
         </div>
       </div>
-      <div class="field-grid two-col">
-        <label class="field"><span>Freio min</span><input id="pedalsBrakeMin" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Freio max</span><input id="pedalsBrakeMax" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Acelerador min</span><input id="pedalsAccelMin" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Acelerador max</span><input id="pedalsAccelMax" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Embreagem min</span><input id="pedalsClutchMin" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Embreagem max</span><input id="pedalsClutchMax" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Handbrake min</span><input id="pedalsHbrakeMin" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Handbrake max</span><input id="pedalsHbrakeMax" type="number" min="0" max="4095"></label>
+      <div class="pedal-dual-grid">
+        <div class="dual-range-card" data-pedal="brake">
+          <div class="dual-range-head"><strong>Freio</strong><span id="pedalsBrakeRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsBrakeFill" class="dual-range-fill"></div>
+            <input id="pedalsBrakeMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsBrakeMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsBrakeMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsBrakeMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
+
+        <div class="dual-range-card" data-pedal="accel">
+          <div class="dual-range-head"><strong>Acelerador</strong><span id="pedalsAccelRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsAccelFill" class="dual-range-fill"></div>
+            <input id="pedalsAccelMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsAccelMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsAccelMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsAccelMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
+
+        <div class="dual-range-card" data-pedal="clutch">
+          <div class="dual-range-head"><strong>Embreagem</strong><span id="pedalsClutchRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsClutchFill" class="dual-range-fill"></div>
+            <input id="pedalsClutchMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsClutchMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsClutchMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsClutchMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
+
+        <div class="dual-range-card" data-pedal="hbrake">
+          <div class="dual-range-head"><strong>Handbrake</strong><span id="pedalsHbrakeRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsHbrakeFill" class="dual-range-fill"></div>
+            <input id="pedalsHbrakeMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsHbrakeMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsHbrakeMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsHbrakeMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
       </div>
       <div class="inline-actions">
         <button id="pedalsApplyManual" class="app-btn primary">Aplicar calibracao manual</button>
+        <button id="pedalsResetDraft" class="app-btn secondary">Descartar alteracoes locais</button>
       </div>
     </article>
   </div>

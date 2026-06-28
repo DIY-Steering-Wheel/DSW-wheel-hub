@@ -3,8 +3,8 @@
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Discovery</div>
-          <h3>Portas e handshake</h3>
+          <div class="card-kicker">Conexao</div>
+          <h3>Portas, handshake e firmware</h3>
         </div>
       </div>
       <div class="field-grid">
@@ -15,6 +15,8 @@
         <div class="inline-actions">
           <button id="connectionRefreshPorts" class="app-btn secondary">Atualizar portas</button>
           <button id="connectionRefreshSnapshot" class="app-btn secondary">Recarregar snapshot</button>
+          <button id="connectionConnect" class="app-btn primary">Conectar</button>
+          <button id="connectionDisconnect" class="app-btn secondary">Desconectar</button>
           <button id="connectionOpenFirmware" class="app-btn primary">Gravar firmware</button>
         </div>
         <div id="connectionPortHint" class="note-panel field-wide">Escolha uma porta candidata e conecte a base. O app usa VID:PID, descricao e handshake para validar a placa.</div>
@@ -25,10 +27,18 @@
       <div class="card-head">
         <div>
           <div class="card-kicker">Attached board</div>
-          <h3>Resumo da base</h3>
+          <h3>Resumo da base conectada</h3>
         </div>
       </div>
       <div class="metric-grid">
+        <div class="metric-box">
+          <span>Firmware</span>
+          <strong id="connectionFirmware">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Placa</span>
+          <strong id="connectionBoard">-</strong>
+        </div>
         <div class="metric-box">
           <span>Porta ativa</span>
           <strong id="connectionActivePort">-</strong>

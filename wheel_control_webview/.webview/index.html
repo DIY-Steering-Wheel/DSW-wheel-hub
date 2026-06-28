@@ -11,27 +11,9 @@
 <body>
   <div class="shell">
     <aside class="shell-sidebar">
-      <div class="sidebar-status card glass-card">
-        <div class="mini-label">Base</div>
-        <div class="status-stack">
-          <div>
-            <span class="mini-caption">Firmware</span>
-            <strong id="sidebarFirmware">-</strong>
-          </div>
-          <div>
-            <span class="mini-caption">Placa</span>
-            <strong id="sidebarBoard">-</strong>
-          </div>
-          <div>
-            <span class="mini-caption">Status</span>
-            <strong id="sidebarStatus">Offline</strong>
-          </div>
-        </div>
-      </div>
-
       <nav class="nav flex-column nav-pills gap-2 sidebar-nav">
-        <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Connection</span></button>
-        <button class="nav-tab btn" data-tab="about"><i class="bi bi-shield-check"></i><span>Bolt</span></button>
+        <button class="nav-tab btn active" data-tab="connection"><i class="bi bi-usb-symbol"></i><span>Conexao</span></button>
+        <button class="nav-tab btn" data-tab="about"><i class="bi bi-shield-check"></i><span>About</span></button>
         <button class="nav-tab btn is-locked" data-tab="wheel" disabled><i class="bi bi-disc"></i><span>Volante</span></button>
         <button class="nav-tab btn is-locked" data-tab="ffb" disabled><i class="bi bi-lightning-charge"></i><span>Force Feedback</span></button>
         <button class="nav-tab btn is-locked" data-tab="pedals" disabled><i class="bi bi-sliders2-vertical"></i><span>Pedais</span></button>
@@ -47,8 +29,8 @@
     <article class="card">
       <div class="card-head">
         <div>
-          <div class="card-kicker">Discovery</div>
-          <h3>Portas e handshake</h3>
+          <div class="card-kicker">Conexao</div>
+          <h3>Portas, handshake e firmware</h3>
         </div>
       </div>
       <div class="field-grid">
@@ -59,6 +41,8 @@
         <div class="inline-actions">
           <button id="connectionRefreshPorts" class="app-btn secondary">Atualizar portas</button>
           <button id="connectionRefreshSnapshot" class="app-btn secondary">Recarregar snapshot</button>
+          <button id="connectionConnect" class="app-btn primary">Conectar</button>
+          <button id="connectionDisconnect" class="app-btn secondary">Desconectar</button>
           <button id="connectionOpenFirmware" class="app-btn primary">Gravar firmware</button>
         </div>
         <div id="connectionPortHint" class="note-panel field-wide">Escolha uma porta candidata e conecte a base. O app usa VID:PID, descricao e handshake para validar a placa.</div>
@@ -69,10 +53,18 @@
       <div class="card-head">
         <div>
           <div class="card-kicker">Attached board</div>
-          <h3>Resumo da base</h3>
+          <h3>Resumo da base conectada</h3>
         </div>
       </div>
       <div class="metric-grid">
+        <div class="metric-box">
+          <span>Firmware</span>
+          <strong id="connectionFirmware">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Placa</span>
+          <strong id="connectionBoard">-</strong>
+        </div>
         <div class="metric-box">
           <span>Porta ativa</span>
           <strong id="connectionActivePort">-</strong>
@@ -198,85 +190,47 @@
 </section>
 
         <section id="tab-ffb" class="tab-page">
-  <div class="page-grid two-col">
+  <div class="page-grid">
     <article class="card">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Force gains</div>
-          <h3>Ganhos de Force Feedback</h3>
+        <div class="ffb-hero">
+          <div>
+            <div class="card-kicker">Force Feedback</div>
+            <h3>Centro de ajuste do FFB</h3>
+            <p class="card-subtitle">Ganhos principais aqui na frente. Saida, byte E e eixo ficam na engrenagem para a tela respirar melhor.</p>
+          </div>
+          <button id="ffbOpenOutputModal" class="app-btn secondary shell-icon-btn" title="Abrir configuracoes de saida"><i class="bi bi-gear-fill"></i></button>
         </div>
       </div>
-      <div class="slider-grid">
-        <div class="slider-row"><label>Geral</label><input id="ffbGeneralRange" type="range" min="0" max="200" step="1"><input id="ffbGeneral" type="number" min="0" max="200"></div>
-        <div class="slider-row"><label>Constante</label><input id="ffbConstantRange" type="range" min="0" max="200" step="1"><input id="ffbConstant" type="number" min="0" max="200"></div>
-        <div class="slider-row"><label>Damper</label><input id="ffbDamperRange" type="range" min="0" max="200" step="1"><input id="ffbDamper" type="number" min="0" max="200"></div>
-        <div class="slider-row"><label>Friction</label><input id="ffbFrictionRange" type="range" min="0" max="200" step="1"><input id="ffbFriction" type="number" min="0" max="200"></div>
-        <div class="slider-row"><label>Periodic</label><input id="ffbPeriodicRange" type="range" min="0" max="200" step="1"><input id="ffbPeriodic" type="number" min="0" max="200"></div>
-        <div class="slider-row"><label>Spring</label><input id="ffbSpringRange" type="range" min="0" max="200" step="1"><input id="ffbSpring" type="number" min="0" max="200"></div>
-        <div class="slider-row"><label>Inertia</label><input id="ffbInertiaRange" type="range" min="0" max="200" step="1"><input id="ffbInertia" type="number" min="0" max="200"></div>
-        <div class="slider-row"><label>Auto-center</label><input id="ffbCenterRange" type="range" min="0" max="200" step="1"><input id="ffbCenter" type="number" min="0" max="200"></div>
-        <div class="slider-row"><label>End stop</label><input id="ffbStopRange" type="range" min="0" max="200" step="1"><input id="ffbStop" type="number" min="0" max="200"></div>
-        <div class="slider-row"><label>Min torque</label><input id="ffbMinTorqueRange" type="range" min="0" max="200" step="1"><input id="ffbMinTorque" type="number" min="0" max="200"></div>
+      <div class="ffb-summary-grid">
+        <div class="metric-box">
+          <span>Saida atual</span>
+          <strong id="ffbOutputSummary">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Eixo FFB</span>
+          <strong id="ffbAxisSummary">-</strong>
+        </div>
+        <div class="metric-box">
+          <span>Desktop effects</span>
+          <strong id="ffbEffectsSummary">-</strong>
+        </div>
+      </div>
+      <div class="slider-grid slider-grid-ffb">
+        <div class="slider-card"><div class="slider-row"><label>Geral</label><input id="ffbGeneralRange" type="range" min="0" max="200" step="1"><input id="ffbGeneral" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Constante</label><input id="ffbConstantRange" type="range" min="0" max="200" step="1"><input id="ffbConstant" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Damper</label><input id="ffbDamperRange" type="range" min="0" max="200" step="1"><input id="ffbDamper" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Friction</label><input id="ffbFrictionRange" type="range" min="0" max="200" step="1"><input id="ffbFriction" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Periodic</label><input id="ffbPeriodicRange" type="range" min="0" max="200" step="1"><input id="ffbPeriodic" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Spring</label><input id="ffbSpringRange" type="range" min="0" max="200" step="1"><input id="ffbSpring" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Inertia</label><input id="ffbInertiaRange" type="range" min="0" max="200" step="1"><input id="ffbInertia" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Auto-center</label><input id="ffbCenterRange" type="range" min="0" max="200" step="1"><input id="ffbCenter" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>End stop</label><input id="ffbStopRange" type="range" min="0" max="200" step="1"><input id="ffbStop" type="number" min="0" max="200"></div></div>
+        <div class="slider-card"><div class="slider-row"><label>Min torque</label><input id="ffbMinTorqueRange" type="range" min="0" max="200" step="1"><input id="ffbMinTorque" type="number" min="0" max="200"></div></div>
       </div>
       <div class="inline-actions">
         <button id="ffbApplyGains" class="app-btn primary">Aplicar ganhos FFB</button>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-kicker">Output + byte E</div>
-          <h3>Saida e desktop effects</h3>
-        </div>
-      </div>
-      <div class="field-grid two-col">
-        <label id="ffbOutputEnabledField" class="toggle-row field-wide">
-          <input id="ffbOutputEnabled" type="checkbox">
-          <span>Saida DAC habilitada</span>
-        </label>
-        <label class="field">
-          <span>Modo</span>
-          <select id="ffbOutputMode">
-            <option value="pwm+-">pwm+-</option>
-            <option value="pwm0-50-100">pwm0-50-100</option>
-            <option value="pwm+dir">pwm+dir</option>
-            <option value="rcm">rcm</option>
-            <option value="0">dac+-</option>
-            <option value="1">dac0-50-100</option>
-            <option value="2">dac+dir</option>
-          </select>
-        </label>
-        <label id="ffbOutputFrequencyField" class="field">
-          <span>Frequencia PWM / RCM</span>
-          <select id="ffbOutputFrequency"></select>
-        </label>
-        <label id="ffbOutputPhaseField" class="toggle-row field-wide">
-          <input id="ffbOutputPhase" type="checkbox">
-          <span>Phase correct</span>
-        </label>
-      </div>
-      <div class="field-grid two-col">
-        <label class="toggle-row"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Auto-center spring</span></label>
-        <label class="toggle-row"><input id="ffbDesktopDamper" type="checkbox"><span>Damper</span></label>
-        <label class="toggle-row"><input id="ffbDesktopInertia" type="checkbox"><span>Inertia</span></label>
-        <label class="toggle-row"><input id="ffbDesktopFriction" type="checkbox"><span>Friction</span></label>
-        <label class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial</span></label>
-        <label class="field field-wide">
-          <span>Eixo FFB</span>
-          <select id="ffbDesktopAxis">
-            <option value="0">X</option>
-            <option value="1">Y</option>
-            <option value="2">Z</option>
-            <option value="3">RX</option>
-            <option value="4">RY</option>
-            <option value="5">RZ</option>
-          </select>
-        </label>
-      </div>
-      <div class="inline-actions">
-        <button id="ffbApplyOutput" class="app-btn secondary">Aplicar saida</button>
-        <button id="ffbApplyDesktop" class="app-btn primary">Aplicar byte E</button>
+        <button id="ffbResetDraft" class="app-btn secondary">Descartar alteracoes locais</button>
       </div>
     </article>
   </div>
@@ -322,21 +276,69 @@
       <div class="card-head">
         <div>
           <div class="card-kicker">Manual calibration</div>
-          <h3>Minimos e maximos</h3>
+          <h3>Minimos e maximos por pedal</h3>
         </div>
       </div>
-      <div class="field-grid two-col">
-        <label class="field"><span>Freio min</span><input id="pedalsBrakeMin" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Freio max</span><input id="pedalsBrakeMax" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Acelerador min</span><input id="pedalsAccelMin" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Acelerador max</span><input id="pedalsAccelMax" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Embreagem min</span><input id="pedalsClutchMin" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Embreagem max</span><input id="pedalsClutchMax" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Handbrake min</span><input id="pedalsHbrakeMin" type="number" min="0" max="4095"></label>
-        <label class="field"><span>Handbrake max</span><input id="pedalsHbrakeMax" type="number" min="0" max="4095"></label>
+      <div class="pedal-dual-grid">
+        <div class="dual-range-card" data-pedal="brake">
+          <div class="dual-range-head"><strong>Freio</strong><span id="pedalsBrakeRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsBrakeFill" class="dual-range-fill"></div>
+            <input id="pedalsBrakeMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsBrakeMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsBrakeMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsBrakeMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
+
+        <div class="dual-range-card" data-pedal="accel">
+          <div class="dual-range-head"><strong>Acelerador</strong><span id="pedalsAccelRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsAccelFill" class="dual-range-fill"></div>
+            <input id="pedalsAccelMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsAccelMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsAccelMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsAccelMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
+
+        <div class="dual-range-card" data-pedal="clutch">
+          <div class="dual-range-head"><strong>Embreagem</strong><span id="pedalsClutchRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsClutchFill" class="dual-range-fill"></div>
+            <input id="pedalsClutchMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsClutchMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsClutchMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsClutchMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
+
+        <div class="dual-range-card" data-pedal="hbrake">
+          <div class="dual-range-head"><strong>Handbrake</strong><span id="pedalsHbrakeRangeLabel">0 - 1023</span></div>
+          <div class="dual-range-shell">
+            <div class="dual-range-track"></div>
+            <div id="pedalsHbrakeFill" class="dual-range-fill"></div>
+            <input id="pedalsHbrakeMinRange" class="dual-range-input dual-range-min" type="range" min="0" max="4095" step="1">
+            <input id="pedalsHbrakeMaxRange" class="dual-range-input dual-range-max" type="range" min="0" max="4095" step="1">
+          </div>
+          <div class="dual-range-values">
+            <label class="field"><span>Min</span><input id="pedalsHbrakeMin" type="number" min="0" max="4095"></label>
+            <label class="field"><span>Max</span><input id="pedalsHbrakeMax" type="number" min="0" max="4095"></label>
+          </div>
+        </div>
       </div>
       <div class="inline-actions">
         <button id="pedalsApplyManual" class="app-btn primary">Aplicar calibracao manual</button>
+        <button id="pedalsResetDraft" class="app-btn secondary">Descartar alteracoes locais</button>
       </div>
     </article>
   </div>
@@ -436,28 +438,29 @@
 
       </section>
 
-      <footer class="dock-bar glass-card">
-        <div class="dock-group dock-group-left">
-          <select id="dockPortSelect" class="form-select form-select-sm"></select>
-          <button id="dockRefreshPorts" class="btn btn-sm btn-outline-light shell-btn" title="Atualizar portas"><i class="bi bi-arrow-repeat"></i></button>
-          <button id="dockConnect" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
-          <button id="dockDisconnect" class="btn btn-sm shell-btn">Desconectar</button>
-        </div>
-
-        <div class="dock-group dock-group-center">
-          <span id="dockStatus" class="badge text-bg-secondary">Offline</span>
-          <span class="dock-stat"><small>TX</small><strong id="dockTx">0%</strong></span>
-          <span class="dock-stat"><small>RX</small><strong id="dockRx">0%</strong></span>
-          <span class="dock-stat"><small>CMD</small><strong id="dockCmd">0</strong></span>
-          <button id="dockSaveEeprom" class="btn btn-sm shell-btn">Salvar EEPROM</button>
-        </div>
-
-        <div class="dock-group dock-group-right">
-          <select id="dockProfileSelect" class="form-select form-select-sm"></select>
-          <button id="dockProfileEdit" class="btn btn-sm shell-btn shell-icon-btn" title="Opcoes de perfil"><i class="bi bi-gear"></i></button>
-        </div>
-      </footer>
     </main>
+
+    <footer class="dock-bar glass-card">
+      <div class="dock-group dock-group-left">
+        <select id="dockPortSelect" class="form-select form-select-sm"></select>
+        <button id="dockRefreshPorts" class="btn btn-sm btn-outline-light shell-btn" title="Atualizar portas"><i class="bi bi-arrow-repeat"></i></button>
+        <button id="dockConnect" class="btn btn-sm shell-btn shell-btn-primary">Conectar</button>
+        <button id="dockDisconnect" class="btn btn-sm shell-btn">Desconectar</button>
+      </div>
+
+      <div class="dock-group dock-group-center">
+        <span id="dockStatus" class="badge text-bg-secondary">Offline</span>
+        <span class="dock-stat"><small>TX</small><strong id="dockTx">0%</strong></span>
+        <span class="dock-stat"><small>RX</small><strong id="dockRx">0%</strong></span>
+        <span class="dock-stat"><small>CMD</small><strong id="dockCmd">0</strong></span>
+        <button id="dockSaveEeprom" class="btn btn-sm shell-btn">Salvar EEPROM</button>
+      </div>
+
+      <div class="dock-group dock-group-right">
+        <select id="dockProfileSelect" class="form-select form-select-sm"></select>
+        <button id="dockProfileEdit" class="btn btn-sm shell-btn shell-icon-btn" title="Opcoes de perfil"><i class="bi bi-gear"></i></button>
+      </div>
+    </footer>
   </div>
 
   <div class="modal fade" id="profileOptionsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -591,7 +594,13 @@
                 <div class="card shell-card">
                   <div class="card-body">
                     <div class="mini-label mb-2">Etapa 1</div>
-                    <h3 class="wizard-title">Captura da linha de base USB</h3>
+                    <h3 class="wizard-title">Escolha da placa e captura USB</h3>
+                    <div class="field-grid mb-3">
+                      <label class="field field-wide">
+                        <span>Qual Arduino sera gravado</span>
+                        <select id="firmwareBoardSelect" class="form-select"></select>
+                      </label>
+                    </div>
                     <div class="note-panel mb-3">Com a placa no modo normal, capture a lista atual de portas. Isso vira a referencia para detectar o bootloader depois.</div>
                     <button id="firmwareCaptureBaseline" class="app-btn primary">Capturar portas atuais</button>
                     <div class="port-list-shell mt-3">
@@ -678,6 +687,68 @@
           <button id="firmwarePrevStep" type="button" class="btn btn-outline-secondary">Retroceder</button>
           <button id="firmwareCancel" type="button" class="btn btn-outline-secondary">Cancelar</button>
           <button id="firmwareNextStep" type="button" class="btn btn-primary">Avancar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="ffbOutputModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Force Feedback</div>
+            <h5 class="modal-title mb-0">Saida e mapeamento</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="field-grid two-col">
+            <label id="ffbOutputEnabledField" class="toggle-row field-wide">
+              <input id="ffbOutputEnabled" type="checkbox">
+              <span>Saida DAC habilitada</span>
+            </label>
+            <label class="field">
+              <span>Modo de saida</span>
+              <select id="ffbOutputMode">
+                <option value="pwm+-">pwm+-</option>
+                <option value="pwm0-50-100">pwm0-50-100</option>
+                <option value="pwm+dir">pwm+dir</option>
+                <option value="rcm">rcm</option>
+                <option value="0">dac+-</option>
+                <option value="1">dac0-50-100</option>
+                <option value="2">dac+dir</option>
+              </select>
+            </label>
+            <label id="ffbOutputFrequencyField" class="field">
+              <span>Frequencia PWM / RCM</span>
+              <select id="ffbOutputFrequency"></select>
+            </label>
+            <label id="ffbOutputPhaseField" class="toggle-row field-wide">
+              <input id="ffbOutputPhase" type="checkbox">
+              <span>Phase correct</span>
+            </label>
+            <label class="toggle-row"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Auto-center spring</span></label>
+            <label class="toggle-row"><input id="ffbDesktopDamper" type="checkbox"><span>Damper</span></label>
+            <label class="toggle-row"><input id="ffbDesktopInertia" type="checkbox"><span>Inertia</span></label>
+            <label class="toggle-row"><input id="ffbDesktopFriction" type="checkbox"><span>Friction</span></label>
+            <label class="toggle-row field-wide"><input id="ffbDesktopMonitor" type="checkbox"><span>Monitor serial</span></label>
+            <label class="field field-wide">
+              <span>Eixo FFB</span>
+              <select id="ffbDesktopAxis">
+                <option value="0">X</option>
+                <option value="1">Y</option>
+                <option value="2">Z</option>
+                <option value="3">RX</option>
+                <option value="4">RY</option>
+                <option value="5">RZ</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="ffbApplyOutput" class="btn btn-outline-secondary">Aplicar saida</button>
+          <button id="ffbApplyDesktop" class="btn btn-primary">Aplicar byte E</button>
         </div>
       </div>
     </div>

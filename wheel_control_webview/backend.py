@@ -181,7 +181,22 @@ class WheelController:
         self.app_dir = root / "wheel_control_webview"
         self.profile_dir = root / "wheel_control_webview" / "profiles"
         self.profile_dir.mkdir(parents=True, exist_ok=True)
-        self.firmware_root = self.app_dir / "promicro hex"
+        self.firmware_sources = {
+            "promicro": {
+                "key": "promicro",
+                "title": "Pro Micro",
+                "folder": self.app_dir / "promicro hex",
+                "info_file": "ver_info_promicro.txt",
+            },
+            "leonardo": {
+                "key": "leonardo",
+                "title": "Leonardo / Micro",
+                "folder": self.app_dir / "leonardo hex",
+                "info_file": "ver_info_leonardo_micro.txt",
+            },
+        }
+        self.firmware_board = "promicro"
+        self.firmware_root = self.firmware_sources[self.firmware_board]["folder"]
         self.avrdude_path = self.app_dir / "avrdude.exe"
         self.avrdude_conf_path = self.app_dir / "avrdude.conf"
 
@@ -258,6 +273,7 @@ class WheelController:
             "wizard_stage": "idle",
             "armed_for_flash": False,
             "last_missing_flags": [],
+            "board": self.firmware_board,
         }
         self.firmware_catalog = self._load_firmware_catalog()
         self.firmware_feature_options = self._build_firmware_feature_options()
@@ -344,8 +360,13 @@ class WheelController:
     def request_snapshot_refresh(self) -> None:
         self._refresh_requested.set()
 
+    def _set_firmware_root(self) -> None:
+        source = self.firmware_sources.get(self.firmware_board, self.firmware_sources["promicro"])
+        self.firmware_root = source["folder"]
+
     def _parse_ver_info(self) -> dict[str, dict[str, Any]]:
-        target = self.firmware_root / "ver_info_promicro.txt"
+        source = self.firmware_sources.get(self.firmware_board, self.firmware_sources["promicro"])
+        target = self.firmware_root / source["info_file"]
         if not target.exists():
             return {}
 
@@ -431,6 +452,36 @@ class WheelController:
             }
             for flag in flags
         ]
+
+    def _reload_firmware_catalog(self) -> None:
+        self._set_firmware_root()
+        self.firmware_catalog = self._load_firmware_catalog()
+        self.firmware_feature_options = self._build_firmware_feature_options()
+        self.flash_state["board"] = self.firmware_board
+
+    def _firmware_board_payload(self) -> dict[str, Any]:
+        return {
+            "selected": self.firmware_board,
+            "options": [
+                {
+                    "key": item["key"],
+                    "title": item["title"],
+                }
+                for item in self.firmware_sources.values()
+            ],
+        }
+
+    def set_firmware_board(self, board: str) -> dict[str, Any]:
+        target = str(board or "").strip().lower()
+        if target not in self.firmware_sources:
+            return {"ok": False, "message": "Placa de firmware invalida."}
+        if self.flash_state.get("busy"):
+            return {"ok": False, "message": "Aguarde a operacao atual do firmware terminar."}
+        self.firmware_board = target
+        self._reload_firmware_catalog()
+        self.reset_flash_wizard()
+        self.flash_state["board"] = self.firmware_board
+        return {"ok": True, "message": f"Catalogo de firmware ajustado para {self.firmware_sources[target]['title']}."}
 
     def _build_profile_payload(self, name: str) -> dict[str, Any]:
         safe_name = _sanitize_profile_name(name)
@@ -1370,6 +1421,7 @@ class WheelController:
             self.flash_state["wizard_stage"] = "idle"
             self.flash_state["armed_for_flash"] = False
             self.flash_state["last_missing_flags"] = []
+            self.flash_state["board"] = self.firmware_board
         return {"ok": True, "message": "Wizard de firmware cancelado."}
 
     def capture_bootloader_baseline(self) -> dict[str, Any]:
@@ -1513,6 +1565,7 @@ class WheelController:
                     "last_error": self.last_error,
                     "notes": self.notes,
                     "flash_state": self.flash_state,
+                    "firmware_board": self._firmware_board_payload(),
                 }
             )
 
@@ -1523,6 +1576,7 @@ class WheelController:
                     "firmware_catalog": self.firmware_catalog,
                     "firmware_feature_options": self.firmware_feature_options,
                     "output_frequency_options": OUTPUT_FREQUENCY_OPTIONS,
+                    "firmware_board": self._firmware_board_payload(),
                 }
             )
 
@@ -1619,6 +1673,10 @@ class WebApi:
 
     def reset_flash_wizard(self) -> dict[str, Any]:
         result = self.controller.reset_flash_wizard()
+        return {**result, "data": self.controller.get_snapshot()}
+
+    def set_firmware_board(self, board: str) -> dict[str, Any]:
+        result = self.controller.set_firmware_board(board)
         return {**result, "data": self.controller.get_snapshot()}
 
     def capture_bootloader_baseline(self) -> dict[str, Any]:

@@ -81,6 +81,14 @@
     element.value = value === null || value === undefined ? "" : value;
   }
 
+  function idleCheck(id, value) {
+    var element = byId(id);
+    if (!element || document.activeElement === element) {
+      return;
+    }
+    element.checked = !!value;
+  }
+
   function percent(value) {
     var number = Number(value || 0);
     if (number < 0) {
@@ -332,9 +340,6 @@
 
   function renderSummary(snapshot) {
     var dockStatus = byId("dockStatus");
-    setText("sidebarFirmware", text(snapshot.firmware.version, "-"), "-");
-    setText("sidebarBoard", text(snapshot.capabilities.board_family, "-"), "-");
-    setText("sidebarStatus", snapshot.connected ? "Online" : "Offline", "");
     setText("dockTx", percent(snapshot.serial_stats.tx_usage_percent), "");
     setText("dockRx", percent(snapshot.serial_stats.rx_usage_percent), "");
     setText("dockCmd", text(snapshot.serial_stats.commands_total, "0"), "0");
@@ -426,24 +431,37 @@
       return;
     }
 
-    if (!wrap.getAttribute("data-built")) {
-      clearChildren(wrap);
-      for (index = 0; index < options.length; index += 1) {
-        var item = document.createElement("label");
-        var checkbox = document.createElement("input");
-        var span = document.createElement("span");
-        item.className = "form-check filter-chip";
-        checkbox.type = "checkbox";
-        checkbox.className = "form-check-input firmware-filter";
-        checkbox.value = options[index].flag;
-        checkbox.checked = !!app.state.firmwareFilterState[options[index].flag];
-        span.className = "form-check-label";
-        span.textContent = options[index].title;
-        item.appendChild(checkbox);
-        item.appendChild(span);
-        wrap.appendChild(item);
-      }
-      wrap.setAttribute("data-built", "1");
+    clearChildren(wrap);
+    for (index = 0; index < options.length; index += 1) {
+      var item = document.createElement("label");
+      var checkbox = document.createElement("input");
+      var span = document.createElement("span");
+      item.className = "form-check filter-chip";
+      checkbox.type = "checkbox";
+      checkbox.className = "form-check-input firmware-filter";
+      checkbox.value = options[index].flag;
+      checkbox.checked = !!app.state.firmwareFilterState[options[index].flag];
+      span.className = "form-check-label";
+      span.textContent = options[index].title;
+      item.appendChild(checkbox);
+      item.appendChild(span);
+      wrap.appendChild(item);
+    }
+  }
+
+  function renderFirmwareBoardSelect(snapshot) {
+    var select = byId("firmwareBoardSelect");
+    var source = snapshot && snapshot.firmware_board ? snapshot.firmware_board : app.state.staticData.firmware_board;
+    var options = source && source.options ? source.options : [];
+    var selected = source && source.selected ? source.selected : "promicro";
+    var index;
+    if (!select) {
+      return;
+    }
+
+    clearChildren(select);
+    for (index = 0; index < options.length; index += 1) {
+      appendOption(select, options[index].key, options[index].title, options[index].key === selected);
     }
   }
 
@@ -931,6 +949,24 @@
       renderFirmwareWizard(app.state.snapshot || { flash_state: {} });
     };
 
+    byId("firmwareBoardSelect").onchange = function () {
+      app.state.firmwareMatches = [];
+      app.state.firmwareSearch = null;
+      app.state.firmwareFilterState = {};
+      callApi("set_firmware_board", [this.value]).then(function () {
+        if (!hasApi()) {
+          return;
+        }
+        window.pywebview.api.get_static_data().then(function (staticData) {
+          app.state.staticData = staticData || app.state.staticData;
+          renderFirmwareFeatureFilters();
+          renderFirmwareBoardSelect(app.state.snapshot || {});
+          renderFirmwareSelect("");
+          renderFirmwareWizard(app.state.snapshot || { flash_state: {} });
+        });
+      });
+    };
+
     byId("firmwarePrevStep").onclick = retreatFirmwareWizard;
     byId("firmwareCancel").onclick = cancelFirmwareWizard;
     byId("firmwareNextStep").onclick = advanceFirmwareWizard;
@@ -991,8 +1027,9 @@
     renderSummary(snapshot);
     lockTabs(snapshot);
     renderFooterLocks(snapshot);
+    renderFirmwareBoardSelect(snapshot);
     renderFirmwareFeatureFilters();
-    renderFirmwareSelect("");
+    renderFirmwareSelect();
     renderFirmwareWizard(snapshot);
     fillProfileOptions(snapshot);
 
@@ -1080,6 +1117,7 @@
   app.setText = setText;
   app.clearChildren = clearChildren;
   app.idleSet = idleSet;
+  app.idleCheck = idleCheck;
   app.percent = percent;
   app.hex4 = hex4;
   app.boolText = boolText;

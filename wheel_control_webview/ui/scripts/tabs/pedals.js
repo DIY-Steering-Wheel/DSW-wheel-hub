@@ -1,18 +1,41 @@
 (function () {
   var module = {};
+  var pedals = ["brake", "accel", "clutch", "hbrake"];
+
+  module.state = {
+    draft: null
+  };
 
   module.bind = function (app) {
     app.byId("pedalsRecalibrate").onclick = function () {
       app.callApi("run_action", ["recalibrate_pedals"]);
     };
     app.byId("pedalsApplyManual").onclick = function () {
-      app.callApi("update_manual_calibration", [collectManual()]);
+      app.callApi("update_manual_calibration", [collectManual()]).then(function (result) {
+        if (result && result.ok) {
+          module.state.draft = null;
+        }
+      });
     };
+    app.byId("pedalsResetDraft").onclick = function () {
+      module.state.draft = null;
+      if (app.state.snapshot) {
+        module.render(app.state.snapshot, app);
+      }
+    };
+
+    pedals.forEach(function (pedal) {
+      bindDualRange(pedal);
+    });
   };
 
   module.render = function (snapshot, app) {
     var title = "Aguardando conexao";
     var text = "Conecte a serial para descobrir o mapa de pedal atual.";
+    if (!snapshot.connected) {
+      module.state.draft = null;
+    }
+    var values = module.state.draft || snapshot.manual_calibration;
 
     if (snapshot.connected) {
       title = snapshot.capabilities.pedal_calibration === "Automatica" ? "Pedais em autocalibracao" : "Pedais em calibracao manual";
@@ -39,18 +62,76 @@
     app.setText("pedalsAds", app.boolText(snapshot.capabilities.has_ads1015), "-");
 
     app.toggleHidden(app.byId("pedalsManualCard"), !snapshot.manual_calibration.available);
-    app.idleSet("pedalsBrakeMin", snapshot.manual_calibration.brake_min);
-    app.idleSet("pedalsBrakeMax", snapshot.manual_calibration.brake_max);
-    app.idleSet("pedalsAccelMin", snapshot.manual_calibration.accel_min);
-    app.idleSet("pedalsAccelMax", snapshot.manual_calibration.accel_max);
-    app.idleSet("pedalsClutchMin", snapshot.manual_calibration.clutch_min);
-    app.idleSet("pedalsClutchMax", snapshot.manual_calibration.clutch_max);
-    app.idleSet("pedalsHbrakeMin", snapshot.manual_calibration.hbrake_min);
-    app.idleSet("pedalsHbrakeMax", snapshot.manual_calibration.hbrake_max);
+    renderDualRange("brake", values.brake_min, values.brake_max);
+    renderDualRange("accel", values.accel_min, values.accel_max);
+    renderDualRange("clutch", values.clutch_min, values.clutch_max);
+    renderDualRange("hbrake", values.hbrake_min, values.hbrake_max);
 
     app.byId("pedalsRecalibrate").disabled = !snapshot.connected || !snapshot.capabilities.supports_pedal_reset;
     app.byId("pedalsApplyManual").disabled = !snapshot.connected || !snapshot.manual_calibration.available;
   };
+
+  function ensureDraft() {
+    if (!module.state.draft && window.BRWheelApp.state.snapshot) {
+      module.state.draft = {
+        brake_min: window.BRWheelApp.state.snapshot.manual_calibration.brake_min,
+        brake_max: window.BRWheelApp.state.snapshot.manual_calibration.brake_max,
+        accel_min: window.BRWheelApp.state.snapshot.manual_calibration.accel_min,
+        accel_max: window.BRWheelApp.state.snapshot.manual_calibration.accel_max,
+        clutch_min: window.BRWheelApp.state.snapshot.manual_calibration.clutch_min,
+        clutch_max: window.BRWheelApp.state.snapshot.manual_calibration.clutch_max,
+        hbrake_min: window.BRWheelApp.state.snapshot.manual_calibration.hbrake_min,
+        hbrake_max: window.BRWheelApp.state.snapshot.manual_calibration.hbrake_max
+      };
+    }
+  }
+
+  function bindDualRange(prefix) {
+    var minNumber = window.BRWheelApp.byId("pedals" + cap(prefix) + "Min");
+    var maxNumber = window.BRWheelApp.byId("pedals" + cap(prefix) + "Max");
+    var minRange = window.BRWheelApp.byId("pedals" + cap(prefix) + "MinRange");
+    var maxRange = window.BRWheelApp.byId("pedals" + cap(prefix) + "MaxRange");
+
+    function updateFromNumbers() {
+      ensureDraft();
+      syncPair(prefix, Number(minNumber.value), Number(maxNumber.value));
+    }
+
+    function updateFromRanges() {
+      ensureDraft();
+      syncPair(prefix, Number(minRange.value), Number(maxRange.value));
+    }
+
+    minNumber.oninput = updateFromNumbers;
+    maxNumber.oninput = updateFromNumbers;
+    minRange.oninput = updateFromRanges;
+    maxRange.oninput = updateFromRanges;
+  }
+
+  function syncPair(prefix, minValue, maxValue) {
+    var lower = Math.max(0, Math.min(minValue, maxValue));
+    var upper = Math.min(4095, Math.max(minValue, maxValue));
+    module.state.draft[prefix + "_min"] = lower;
+    module.state.draft[prefix + "_max"] = upper;
+    renderDualRange(prefix, lower, upper);
+  }
+
+  function renderDualRange(prefix, minValue, maxValue) {
+    var start = Math.max(0, Math.min(Number(minValue), Number(maxValue)));
+    var end = Math.min(4095, Math.max(Number(minValue), Number(maxValue)));
+    var title = "pedals" + cap(prefix);
+    var fill = window.BRWheelApp.byId(title + "Fill");
+    window.BRWheelApp.idleSet(title + "Min", start);
+    window.BRWheelApp.idleSet(title + "Max", end);
+    window.BRWheelApp.idleSet(title + "MinRange", start);
+    window.BRWheelApp.idleSet(title + "MaxRange", end);
+    window.BRWheelApp.setText(title + "RangeLabel", start + " - " + end, "");
+
+    if (fill) {
+      fill.style.left = (start / 4095 * 100) + "%";
+      fill.style.width = Math.max(0, ((end - start) / 4095 * 100)) + "%";
+    }
+  }
 
   function collectManual() {
     return {
@@ -63,6 +144,10 @@
       hbrake_min: Number(window.BRWheelApp.byId("pedalsHbrakeMin").value),
       hbrake_max: Number(window.BRWheelApp.byId("pedalsHbrakeMax").value)
     };
+  }
+
+  function cap(value) {
+    return value.charAt(0).toUpperCase() + value.slice(1);
   }
 
   window.BRWheelApp.registerTab("pedals", module);

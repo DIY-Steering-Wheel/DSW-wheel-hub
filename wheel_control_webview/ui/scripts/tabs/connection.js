@@ -14,12 +14,26 @@
       app.byId("dockPortSelect").value = this.value;
     };
 
+    app.byId("connectionConnect").onclick = function () {
+      app.callApi("connect", [app.byId("connectionPortSelect").value]).then(function (result) {
+        if (result && result.ok) {
+          app.activateTab("wheel");
+        }
+      });
+    };
+
+    app.byId("connectionDisconnect").onclick = function () {
+      app.callApi("disconnect");
+    };
+
     app.byId("connectionOpenFirmware").onclick = function () {
       app.getModal("firmwareModal").show();
     };
   };
 
   module.render = function (snapshot, app) {
+    app.setText("connectionFirmware", app.text(snapshot.firmware.version, "-"), "-");
+    app.setText("connectionBoard", app.text(snapshot.capabilities.board_family, "-"), "-");
     app.setText("connectionActivePort", app.text(snapshot.connection.port, "-"), "-");
     app.setText("connectionState", app.text(snapshot.diagnostics.controller_state_label, "-"), "-");
     app.setText("connectionEncoder", app.text(snapshot.capabilities.encoder, "-"), "-");
@@ -40,6 +54,8 @@
       snapshot.ports.length ? snapshot.ports.length + " porta(s) candidata(s) encontrada(s). A melhor opcao costuma vir marcada com * no seletor." : "Nenhuma porta candidata encontrada no momento.",
       ""
     );
+    app.byId("connectionConnect").disabled = !app.byId("connectionPortSelect").value || snapshot.connected;
+    app.byId("connectionDisconnect").disabled = !snapshot.connected;
     app.byId("connectionOpenFirmware").disabled = !(app.state.staticData && app.state.staticData.firmware_catalog && app.state.staticData.firmware_catalog.length);
   };
 
