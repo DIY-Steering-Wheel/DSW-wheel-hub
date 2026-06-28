@@ -76,7 +76,8 @@
       }
       payload = {
         rotation_deg: Number(module.state.draft.rotation_deg),
-        encoder_cpr: Number(module.state.draft.encoder_cpr)
+        encoder_cpr: Number(module.state.draft.encoder_cpr),
+        encoder_ppr: Number(module.state.draft.encoder_ppr)
       };
       window.BRWheelApp.callApi("update_basic_settings", [payload]).then(function (result) {
         if (!(result && result.ok)) {
@@ -133,7 +134,16 @@
     var monitor = snapshot.device_monitor || {};
     var axesWrap = app.byId("wheelDeviceAxes");
     var buttonsWrap = app.byId("wheelDeviceButtonList");
-    var labels = [];
+    var pressedButtons = new Set(monitor.buttons_pressed || []);
+    var buttonCount = Number(monitor.button_count || 0);
+    if (!buttonCount && pressedButtons.size) {
+      buttonCount = Math.max.apply(null, Array.from(pressedButtons));
+    }
+    var buttonNames = [];
+
+    for (var id = 1; id <= buttonCount; id += 1) {
+      buttonNames.push("B" + id);
+    }
 
     app.setText("wheelDeviceState", monitor.connected ? (monitor.matched ? "Encontrado" : "Parcial") : "Offline", "-");
     app.setText("wheelDeviceName", app.text(monitor.device_name || snapshot.connection.product, "-"), "-");
@@ -142,7 +152,7 @@
     } else {
       app.setText("wheelDeviceVidPid", "-", "-");
     }
-    app.setText("wheelDeviceButtons", (monitor.buttons_pressed || []).length ? monitor.buttons_pressed.join(", ") : "Nenhum", "-");
+    app.setText("wheelDeviceButtons", buttonNames.length ? buttonNames.join(", ") : "Nenhum", "-");
     app.setText("wheelDeviceStatus", app.text(monitor.status, "Aguardando conexao."), "");
 
     app.clearChildren(axesWrap);
@@ -151,15 +161,14 @@
     });
 
     app.clearChildren(buttonsWrap);
-    if ((monitor.buttons_pressed || []).length) {
-      (monitor.buttons_pressed || []).forEach(function (buttonId) {
-        buttonsWrap.appendChild(buildButtonBadge(buttonId));
-        labels.push("B" + buttonId);
-      });
+    if (buttonCount) {
+      for (var buttonId = 1; buttonId <= buttonCount; buttonId += 1) {
+        buttonsWrap.appendChild(buildButtonBadge(buttonId, pressedButtons.has(buttonId)));
+      }
     } else {
       var note = document.createElement("div");
-      note.className = "note";
-      note.textContent = "Nenhum botao pressionado no momento.";
+      note.className = "wheel-empty-state";
+      note.textContent = "Nenhum botao detectado no monitor.";
       buttonsWrap.appendChild(note);
     }
   }
@@ -167,27 +176,27 @@
   function buildAxisGauge(axis) {
     var value = Math.max(0, Math.min(100, Number(axis.value || 0)));
     var card = document.createElement("div");
-    card.className = "device-axis-card";
+    card.className = "wheel-axis-card";
 
     var title = document.createElement("strong");
     title.className = "device-axis-card-title";
     title.textContent = axis.label;
 
     var gauge = document.createElement("div");
-    gauge.className = "device-axis-gauge";
+    gauge.className = "wheel-axis-bar-wrap";
 
-    var face = document.createElement("div");
-    face.className = "device-axis-gauge-face";
+    var line = document.createElement("div");
+    line.className = "wheel-axis-bar-line";
 
-    var pointer = document.createElement("div");
-    pointer.className = "device-axis-gauge-pointer";
-    pointer.style.transform = "rotate(" + (value * 1.8 - 90) + "deg)";
+    var fill = document.createElement("div");
+    fill.className = "wheel-axis-bar-fill";
+    fill.style.width = value + "%";
 
-    face.appendChild(pointer);
-    gauge.appendChild(face);
+    line.appendChild(fill);
+    gauge.appendChild(line);
 
     var meta = document.createElement("div");
-    meta.className = "device-axis-card-value";
+    meta.className = "wheel-axis-card-value";
     meta.textContent = value.toFixed(0) + "%";
 
     card.appendChild(title);
@@ -196,9 +205,9 @@
     return card;
   }
 
-  function buildButtonBadge(buttonId) {
+  function buildButtonBadge(buttonId, pressed) {
     var badge = document.createElement("span");
-    badge.className = "device-button-badge";
+    badge.className = "wheel-button-pill" + (pressed ? " is-pressed" : "");
     badge.textContent = "B" + buttonId;
     return badge;
   }

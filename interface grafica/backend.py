@@ -1357,10 +1357,12 @@ class WheelController:
     def _validate_basic_payload(self, payload: dict[str, Any]) -> dict[str, int]:
         validated: dict[str, int] = {}
         if payload.get("rotation_deg") is not None:
-            validated["rotation_deg"] = self._validated_int(payload.get("rotation_deg"), 30, 1244, "Rotacao")
+            validated["rotation_deg"] = self._validated_int(payload.get("rotation_deg"), 30, 2244, "Rotacao")
 
-        if payload.get("encoder_ppr") is not None and payload.get("encoder_cpr") is None:
-            payload["encoder_cpr"] = self._validated_int(payload.get("encoder_ppr"), 1, 150000, "Encoder PPR") * 4
+        if payload.get("encoder_ppr") is not None:
+            validated_ppr = self._validated_int(payload.get("encoder_ppr"), 1, 150000, "Encoder PPR")
+            if payload.get("encoder_cpr") is None:
+                payload["encoder_cpr"] = validated_ppr * 4
 
         if payload.get("encoder_cpr") is not None:
             validated["encoder_cpr"] = self._validated_int(payload.get("encoder_cpr"), 4, 600000, "Encoder CPR")
