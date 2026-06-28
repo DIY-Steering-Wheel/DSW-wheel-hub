@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BR Wheel Control Aero</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand-mark"></div>
+        <div class="brand-copy">
+          <div class="brand-kicker">BR Wheel Control Aero</div>
+          <h1>Controle organizado por setores</h1>
+          <p>Conexao, volante, pedais, cambio e serial, adaptados ao firmware conectado.</p>
+        </div>
+      </div>
+      <div class="top-status">
+        <div id="statusPill" class="status-pill offline">Desconectado</div>
+        <div class="telemetry-box">
+          <span>TX</span>
+          <strong id="serialTxUsage">0%</strong>
+        </div>
+        <div class="telemetry-box">
+          <span>RX</span>
+          <strong id="serialRxUsage">0%</strong>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabbar">
+      <button class="tab-btn active" data-target="tab-connection">Conexao</button>
+      <button class="tab-btn is-locked" data-target="tab-wheel" disabled>Volante</button>
+      <button class="tab-btn is-locked" data-target="tab-pedals" disabled>Pedais</button>
+      <button id="shifterTabBtn" class="tab-btn is-hidden is-locked" data-target="tab-shifter" disabled>Cambio</button>
+      <button class="tab-btn is-locked" data-target="tab-serial" disabled>Serial</button>
+    </nav>
+
+    <main class="tab-host">
+      <section id="tab-connection" class="tab-panel active">
+        <div class="layout-row">
+          <article class="card card-large">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Serial segura</div>
+                <h2>Deteccao inteligente do Arduino</h2>
+              </div>
+              <div class="firmware-chip" id="firmwareVersion">-</div>
+            </div>
+
+            <div class="form-line">
+              <label class="field field-grow">
+                <span>Porta serial</span>
+                <select id="portSelect"></select>
+              </label>
+              <button id="refreshPortsBtn" class="btn btn-soft">Atualizar portas</button>
+              <button id="connectBtn" class="btn btn-primary">Conectar</button>
+              <button id="disconnectBtn" class="btn btn-ghost">Desconectar</button>
+            </div>
+
+            <div class="stats-row">
+              <div class="metric-box">
+                <span>Porta ativa</span>
+                <strong id="activePort">-</strong>
+              </div>
+              <div class="metric-box">
+                <span>VID:PID</span>
+                <strong id="vidPid">-</strong>
+              </div>
+              <div class="metric-box">
+                <span>Placa</span>
+                <strong id="boardFamily">-</strong>
+              </div>
+              <div class="metric-box">
+                <span>Estado</span>
+                <strong id="controllerState">-</strong>
+              </div>
+            </div>
+
+            <div class="stats-row">
+              <div class="metric-box">
+                <span>Encoder</span>
+                <strong id="encoderType">-</strong>
+              </div>
+              <div class="metric-box">
+                <span>Saida</span>
+                <strong id="outputType">-</strong>
+              </div>
+              <div class="metric-box">
+                <span>Botoes</span>
+                <strong id="buttonCapacity">-</strong>
+              </div>
+              <div class="metric-box">
+                <span>Comandos</span>
+                <strong id="serialCommandsTotal">0</strong>
+              </div>
+            </div>
+
+            <div class="telemetry-panel">
+              <div class="telemetry-card">
+                <div class="telemetry-head">
+                  <span>Uso TX</span>
+                  <strong id="serialTxUsageLarge">0%</strong>
+                </div>
+                <div class="meter"><div id="serialTxBar" class="meter-fill meter-tx"></div></div>
+                <small id="serialTxBytes">0 bytes enviados</small>
+              </div>
+              <div class="telemetry-card">
+                <div class="telemetry-head">
+                  <span>Uso RX</span>
+                  <strong id="serialRxUsageLarge">0%</strong>
+                </div>
+                <div class="meter"><div id="serialRxBar" class="meter-fill meter-rx"></div></div>
+                <small id="serialRxBytes">0 bytes recebidos</small>
+              </div>
+            </div>
+
+            <div id="capabilityBadges" class="badge-list"></div>
+            <div id="notesBox" class="note-stack"></div>
+          </article>
+
+          <div class="side-column">
+            <article class="card">
+              <div class="card-head">
+                <div>
+                  <div class="kicker">Acoes</div>
+                  <h2>Base e EEPROM</h2>
+                </div>
+              </div>
+              <div class="button-stack">
+                <button data-action="refresh_device" class="btn btn-soft action-btn">Atualizar snapshot</button>
+                <button data-action="center" class="btn btn-soft action-btn">Recentralizar volante</button>
+                <button data-action="recalibrate_wheel" class="btn btn-soft action-btn">Recalibrar volante</button>
+                <button data-action="recalibrate_pedals" class="btn btn-soft action-btn">Recalibrar pedais</button>
+                <button data-action="reset_zindex" class="btn btn-soft action-btn">Resetar Z-index</button>
+                <button data-action="save_eeprom" class="btn btn-primary action-btn">Salvar na EEPROM</button>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-head">
+                <div>
+                  <div class="kicker">Leitura do firmware</div>
+                  <h2>Como o app decide o que mostrar</h2>
+                </div>
+              </div>
+              <p class="card-copy">As abas extras so liberam depois da serial conectar. O cambio so aparece quando a firmware reporta a opcao <strong>f</strong> no comando <strong>V</strong>, que indica XY shifter por potenciometros.</p>
+              <div class="hint-box" id="connectionHint">Conecte a base para liberar os setores do app.</div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-wheel" class="tab-panel">
+        <div class="layout-row">
+          <article class="card card-large">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Volante</div>
+                <h2>Parametros estruturais</h2>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label class="field">
+                <span>Rotacao (graus)</span>
+                <input id="rotationDeg" type="number" min="30" max="1800" step="1">
+              </label>
+              <label class="field">
+                <span>Encoder CPR</span>
+                <input id="encoderCpr" type="number" min="4" max="600000" step="1">
+              </label>
+              <label class="field">
+                <span id="brakePressureLabel">Brake scaling</span>
+                <input id="brakePressure" type="number" min="1" max="255" step="1">
+              </label>
+              <label class="field">
+                <span>Resolucao de saida</span>
+                <input id="outputResolution" type="text" readonly>
+              </label>
+            </div>
+
+            <div class="button-line">
+              <button id="saveBasicBtn" class="btn btn-primary">Aplicar parametros basicos</button>
+            </div>
+          </article>
+
+          <article class="card side-card">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Byte E</div>
+                <h2>Desktop effects</h2>
+              </div>
+            </div>
+            <label class="toggle-line"><input id="desktopAutoCenter" type="checkbox">Auto-center spring</label>
+            <label class="toggle-line"><input id="desktopDamper" type="checkbox">Damper</label>
+            <label class="toggle-line"><input id="desktopInertia" type="checkbox">Inertia</label>
+            <label class="toggle-line"><input id="desktopFriction" type="checkbox">Friction</label>
+            <label class="toggle-line"><input id="desktopMonitor" type="checkbox">Monitor serial</label>
+            <label class="field">
+              <span>Eixo FFB</span>
+              <select id="desktopAxis">
+                <option value="0">X</option>
+                <option value="1">Y</option>
+                <option value="2">Z</option>
+                <option value="3">RX</option>
+                <option value="4">RY</option>
+                <option value="5">RZ</option>
+              </select>
+            </label>
+            <div class="button-line">
+              <button id="saveDesktopBtn" class="btn btn-soft">Aplicar byte E</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="layout-row">
+          <article class="card card-large">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Force Feedback</div>
+                <h2>Ganhos do volante</h2>
+              </div>
+            </div>
+
+            <div class="slider-list">
+              <div class="slider-item"><label>Geral</label><input id="generalGainRange" type="range" min="0" max="200" step="1"><input id="generalGain" type="number" min="0" max="200"></div>
+              <div class="slider-item"><label>Constante</label><input id="constantGainRange" type="range" min="0" max="200" step="1"><input id="constantGain" type="number" min="0" max="200"></div>
+              <div class="slider-item"><label>Damper</label><input id="damperGainRange" type="range" min="0" max="200" step="1"><input id="damperGain" type="number" min="0" max="200"></div>
+              <div class="slider-item"><label>Friction</label><input id="frictionGainRange" type="range" min="0" max="200" step="1"><input id="frictionGain" type="number" min="0" max="200"></div>
+              <div class="slider-item"><label>Periodic</label><input id="periodicGainRange" type="range" min="0" max="200" step="1"><input id="periodicGain" type="number" min="0" max="200"></div>
+              <div class="slider-item"><label>Spring</label><input id="springGainRange" type="range" min="0" max="200" step="1"><input id="springGain" type="number" min="0" max="200"></div>
+              <div class="slider-item"><label>Inertia</label><input id="inertiaGainRange" type="range" min="0" max="200" step="1"><input id="inertiaGain" type="number" min="0" max="200"></div>
+              <div class="slider-item"><label>Auto-center</label><input id="centerGainRange" type="range" min="0" max="200" step="1"><input id="centerGain" type="number" min="0" max="200"></div>
+              <div class="slider-item"><label>End stop</label><input id="stopGainRange" type="range" min="0" max="200" step="1"><input id="stopGain" type="number" min="0" max="200"></div>
+              <div class="slider-item"><label>Min torque</label><input id="minTorqueRange" type="range" min="0" max="200" step="1"><input id="minTorque" type="number" min="0" max="200"></div>
+            </div>
+
+            <div class="button-line">
+              <button id="saveFfbBtn" class="btn btn-primary">Aplicar ganhos FFB</button>
+            </div>
+          </article>
+
+          <article class="card side-card">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Saida FFB</div>
+                <h2>PWM ou DAC</h2>
+              </div>
+            </div>
+            <label id="outputEnabledField" class="toggle-line"><input id="outputEnabled" type="checkbox">Saida DAC habilitada</label>
+            <label class="field">
+              <span>Modo</span>
+              <select id="outputMode">
+                <option value="pwm+-">pwm+-</option>
+                <option value="pwm0-50-100">pwm0-50-100</option>
+                <option value="pwm+dir">pwm+dir</option>
+                <option value="rcm">rcm</option>
+                <option value="0">dac+-</option>
+                <option value="1">dac0-50-100</option>
+                <option value="2">dac+dir</option>
+              </select>
+            </label>
+            <label id="outputPhaseField" class="toggle-line"><input id="outputPhase" type="checkbox">Phase correct</label>
+            <label id="outputFrequencyField" class="field">
+              <span>Indice de frequencia</span>
+              <select id="outputFrequency"></select>
+            </label>
+            <p class="card-copy">Quando estiver em PWM, a base pode pedir reinicio do Arduino para aplicar a troca.</p>
+            <div class="button-line">
+              <button id="saveOutputBtn" class="btn btn-soft">Aplicar configuracao de saida</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-pedals" class="tab-panel">
+        <div class="layout-row">
+          <article class="card card-large">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Pedais</div>
+                <h2>Modo detectado pela firmware</h2>
+              </div>
+            </div>
+            <div class="mode-banner">
+              <strong id="pedalModeTitle">Aguardando conexao</strong>
+              <p id="pedalModeText">Conecte a serial para descobrir se a base esta com autocalibracao, load cell, ADS1015 ou calibracao manual.</p>
+            </div>
+
+            <div class="stats-row">
+              <div class="metric-box">
+                <span>Brake scaling</span>
+                <strong id="pedalBrakePressureValue">-</strong>
+              </div>
+              <div class="metric-box">
+                <span>Calibracao</span>
+                <strong id="pedalCalibrationType">-</strong>
+              </div>
+              <div class="metric-box">
+                <span>Load cell</span>
+                <strong id="pedalLoadCell">-</strong>
+              </div>
+              <div class="metric-box">
+                <span>ADS1015</span>
+                <strong id="pedalAds">-</strong>
+              </div>
+            </div>
+
+            <div class="button-line">
+              <button data-action="recalibrate_pedals" class="btn btn-soft action-btn">Recalibrar pedais</button>
+            </div>
+          </article>
+
+          <article id="manualCalibCard" class="card side-card is-hidden">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Calibracao manual</div>
+                <h2>Minimos e maximos</h2>
+              </div>
+            </div>
+            <div class="form-row form-row-tight">
+              <label class="field"><span>Freio min</span><input id="brakeMin" type="number" min="0" max="4095"></label>
+              <label class="field"><span>Freio max</span><input id="brakeMax" type="number" min="0" max="4095"></label>
+              <label class="field"><span>Acelerador min</span><input id="accelMin" type="number" min="0" max="4095"></label>
+              <label class="field"><span>Acelerador max</span><input id="accelMax" type="number" min="0" max="4095"></label>
+              <label class="field"><span>Embreagem min</span><input id="clutchMin" type="number" min="0" max="4095"></label>
+              <label class="field"><span>Embreagem max</span><input id="clutchMax" type="number" min="0" max="4095"></label>
+              <label class="field"><span>Handbrake min</span><input id="hbrakeMin" type="number" min="0" max="4095"></label>
+              <label class="field"><span>Handbrake max</span><input id="hbrakeMax" type="number" min="0" max="4095"></label>
+            </div>
+            <div class="button-line">
+              <button id="saveManualCalibBtn" class="btn btn-primary">Aplicar calibracao manual</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-shifter" class="tab-panel">
+        <div class="layout-row">
+          <article class="card card-large">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Cambio por potenciometros</div>
+                <h2>Monitor XY ao vivo</h2>
+              </div>
+              <div class="firmware-chip" id="shifterLive">0 / 0</div>
+            </div>
+
+            <div class="xy-monitor">
+              <div class="xy-axis">
+                <div class="xy-label">Eixo X</div>
+                <div class="meter"><div id="shifterXBar" class="meter-fill meter-tx"></div></div>
+              </div>
+              <div class="xy-axis">
+                <div class="xy-label">Eixo Y</div>
+                <div class="meter"><div id="shifterYBar" class="meter-fill meter-rx"></div></div>
+              </div>
+            </div>
+
+            <div class="stats-row">
+              <div class="metric-box">
+                <span>Faixa A</span>
+                <strong id="shifterAView">0</strong>
+              </div>
+              <div class="metric-box">
+                <span>Faixa B</span>
+                <strong id="shifterBView">0</strong>
+              </div>
+              <div class="metric-box">
+                <span>Faixa C</span>
+                <strong id="shifterCView">0</strong>
+              </div>
+              <div class="metric-box">
+                <span>Faixa D</span>
+                <strong id="shifterDView">0</strong>
+              </div>
+              <div class="metric-box">
+                <span>Faixa E</span>
+                <strong id="shifterEView">0</strong>
+              </div>
+            </div>
+          </article>
+
+          <article id="shifterCard" class="card side-card">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Calibracao</div>
+                <h2>Limites e comportamento</h2>
+              </div>
+            </div>
+            <div class="form-row form-row-tight">
+              <label class="field"><span>A</span><input id="shifterA" type="number" min="0" max="1023"></label>
+              <label class="field"><span>B</span><input id="shifterB" type="number" min="0" max="1023"></label>
+              <label class="field"><span>C</span><input id="shifterC" type="number" min="0" max="1023"></label>
+              <label class="field"><span>D</span><input id="shifterD" type="number" min="0" max="1023"></label>
+              <label class="field"><span>E</span><input id="shifterE" type="number" min="0" max="1023"></label>
+            </div>
+            <label class="toggle-line"><input id="shifterReverse" type="checkbox">Reverse invertido</label>
+            <label class="toggle-line"><input id="shifterGear8" type="checkbox">Modo 8 marchas</label>
+            <label class="toggle-line"><input id="shifterInvertX" type="checkbox">Inverter eixo X</label>
+            <label class="toggle-line"><input id="shifterInvertY" type="checkbox">Inverter eixo Y</label>
+            <div class="button-line">
+              <button id="saveShifterBtn" class="btn btn-primary">Aplicar calibracao do cambio</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-serial" class="tab-panel">
+        <div class="layout-row">
+          <article class="card side-card">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Console bruto</div>
+                <h2>Comando direto</h2>
+              </div>
+            </div>
+            <label class="field">
+              <span>Comando</span>
+              <input id="rawCommand" type="text" placeholder="Ex.: U, V, FG 120, HG, YR, W 9">
+            </label>
+            <div class="button-line">
+              <button id="sendRawBtn" class="btn btn-soft">Enviar</button>
+            </div>
+            <div class="feedback-box" id="feedbackBar">Pronto para conectar a base e acompanhar a serial.</div>
+          </article>
+
+          <article class="card card-large">
+            <div class="card-head">
+              <div>
+                <div class="kicker">Perfis</div>
+                <h2>Snapshots locais</h2>
+              </div>
+            </div>
+            <div class="form-line">
+              <input id="profileName" type="text" placeholder="Nome do perfil">
+              <button id="saveProfileBtn" class="btn btn-primary">Salvar perfil</button>
+            </div>
+            <div id="profilesList" class="list-stack"></div>
+          </article>
+        </div>
+
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <div class="kicker">Historico</div>
+              <h2>TX / RX recente</h2>
+            </div>
+          </div>
+          <div id="historyList" class="list-stack"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
