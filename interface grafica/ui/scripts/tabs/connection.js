@@ -2,7 +2,8 @@
   var module = {};
   var wiringState = {
     selectedFile: "",
-    zoom: 1
+    zoom: 1,
+    imagesOnly: true
   };
 
   module.bind = function (app) {
@@ -39,6 +40,12 @@
     app.byId("wiringZoomReset").onclick = function () {
       wiringState.zoom = 1;
       renderWiringPreview(app);
+    };
+
+    app.byId("wiringImagesOnly").onchange = function () {
+      wiringState.imagesOnly = !!this.checked;
+      ensureWiringSelection(app);
+      renderWiringModal(app);
     };
 
     app.byId("wiringModal").addEventListener("show.bs.modal", function () {
@@ -135,7 +142,13 @@
   }
 
   function availableWirings(app) {
-    return (app.state.staticData && app.state.staticData.wiring_files) || [];
+    var items = (app.state.staticData && app.state.staticData.wiring_files) || [];
+    if (!wiringState.imagesOnly) {
+      return items;
+    }
+    return items.filter(function (item) {
+      return item.preview_type === "image";
+    });
   }
 
   function currentWiring(app) {
@@ -169,6 +182,7 @@
   }
 
   function renderWiringModal(app) {
+    window.BRWheelApp.idleCheck("wiringImagesOnly", wiringState.imagesOnly);
     renderWiringList(app);
     renderWiringPreview(app);
   }

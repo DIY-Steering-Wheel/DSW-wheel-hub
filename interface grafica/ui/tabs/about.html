@@ -1,45 +1,103 @@
 <section id="tab-about" class="tab-page">
   <div class="page-grid two-col">
-    <article class="card">
+    <article class="card field-wide">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Comunidade</div>
-          <h3>Ajuda no Discord</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Projeto</div>
+            <h3>DSW Wheel Hub</h3>
+          </div>
+          <button
+            type="button"
+            class="app-btn secondary shell-icon-btn help-trigger"
+            data-help-key="about-overview"
+            title="Ajuda sobre o projeto"
+          >
+            <i class="bi bi-question-lg"></i>
+          </button>
         </div>
       </div>
-      <div class="discord-frame-shell">
-        <iframe src="https://discord.com/widget?id=1061814371174596708&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+
+      <div class="about-summary-hero">
+        <div class="about-project-line">
+          <span class="about-project-name">DSW Wheel Hub</span>
+          <span id="aboutVersionBadge" class="badge">v1.0.0</span>
+        </div>
+
+        <a
+          class="app-btn primary about-link-btn"
+          href="https://github.com/DIY-Steering-Wheel/DSW-wheel-hub"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <i class="bi bi-github me-2"></i>GitHub do projeto
+        </a>
+
+        <div id="aboutSummaryMeta" class="metric-grid mt-3"></div>
       </div>
     </article>
 
     <article class="card">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Criadores</div>
-          <h3>Autores e projeto original</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Links uteis</div>
+            <h3>Acesso rapido</h3>
+          </div>
+          <button
+            type="button"
+            class="app-btn secondary shell-icon-btn help-trigger"
+            data-help-key="about-links"
+            title="Ajuda sobre links uteis"
+          >
+            <i class="bi bi-question-lg"></i>
+          </button>
         </div>
       </div>
+
+      <div id="aboutLinks" class="about-link-grid"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Firmware</div>
+            <h3>Projeto conectado</h3>
+          </div>
+          <button
+            type="button"
+            class="app-btn secondary shell-icon-btn help-trigger"
+            data-help-key="about-firmware"
+            title="Ajuda sobre firmware"
+          >
+            <i class="bi bi-question-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="aboutProjectInfo" class="note-stack"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Creditos</div>
+            <h3>Autores essenciais</h3>
+          </div>
+          <button
+            type="button"
+            class="app-btn secondary shell-icon-btn help-trigger"
+            data-help-key="about-credits"
+            title="Ajuda sobre creditos"
+          >
+            <i class="bi bi-question-lg"></i>
+          </button>
+        </div>
+      </div>
+
       <div id="aboutCreators" class="note-stack"></div>
-    </article>
-
-    <article class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-kicker">Licencas</div>
-          <h3>Componentes e atribuicoes</h3>
-        </div>
-      </div>
-      <div id="aboutLicenses" class="note-stack"></div>
-    </article>
-
-    <article class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-kicker">Avisos</div>
-          <h3>Uso, firmware e responsabilidade</h3>
-        </div>
-      </div>
-      <div id="aboutWarnings" class="note-stack"></div>
     </article>
   </div>
 </section>

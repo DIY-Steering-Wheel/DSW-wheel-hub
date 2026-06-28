@@ -2,16 +2,19 @@
   <div class="page-grid two-col">
     <article class="card">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Basico do volante</div>
-          <h3>Geometria, encoder e ganho principal</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Basico do volante</div>
+            <h3>Geometria, encoder e ganho principal</h3>
+          </div>
+          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="wheel-basics" title="Ajuda do basico"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
       <div class="field-grid two-col">
         <div class="slider-row field-wide">
           <label>Rotacao do volante (graus)</label>
-          <input id="wheelRotationDegRange" type="range" min="30" max="1244" step="1">
-          <input id="wheelRotationDeg" type="number" min="30" max="1244" step="1">
+          <input id="wheelRotationDegRange" type="range" min="30" max="2244" step="1">
+          <input id="wheelRotationDeg" type="number" min="30" max="2244" step="1">
         </div>
         <div class="slider-row field-wide">
           <label>Ganho geral de Force Feedback</label>
@@ -32,14 +35,16 @@
         </label>
         <div id="wheelOutputResolutionHint" class="note-panel field-wide">Aguardando leitura da firmware.</div>
       </div>
-      <div class="note-panel">Rotacao define o curso total do volante. CPR sao as contagens finais por volta lidas pela firmware. PPR sao os pulsos fisicos do encoder; em encoder em quadratura, normalmente `CPR = PPR x 4`.</div>
     </article>
 
     <article class="card">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Acoes do volante</div>
-          <h3>Acoes do volante</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Acoes do volante</div>
+            <h3>Acoes do volante</h3>
+          </div>
+          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="wheel-actions" title="Ajuda das acoes"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
       <div class="button-stack">
@@ -47,14 +52,16 @@
         <button id="wheelCalibrate" class="app-btn secondary">Recalibrar volante</button>
         <button id="wheelResetZ" class="app-btn secondary">Resetar Z-index</button>
       </div>
-      <div class="note-panel">Os comandos disponiveis dependem do firmware conectado e so aparecem quando fizerem sentido para a base.</div>
     </article>
 
     <article class="card field-wide">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Diagnostico do dispositivo</div>
-          <h3>Monitor do joystick no Windows</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Diagnostico do dispositivo</div>
+            <h3>Monitor do joystick no Windows</h3>
+          </div>
+          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="wheel-monitor" title="Ajuda do monitor"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
       <div class="metric-grid">

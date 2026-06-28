@@ -73,9 +73,12 @@
 
     <article class="card">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Ferramentas</div>
-          <h3>Firmware e utilitarios</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Ferramentas</div>
+            <h3>Firmware e utilitarios</h3>
+          </div>
+          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="firmware-tools" title="Ajuda das ferramentas"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
       <div class="inline-actions">
@@ -90,64 +93,124 @@
 
         <section id="tab-about" class="tab-page">
   <div class="page-grid two-col">
-    <article class="card">
+    <article class="card field-wide">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Comunidade</div>
-          <h3>Ajuda no Discord</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Projeto</div>
+            <h3>DSW Wheel Hub</h3>
+          </div>
+          <button
+            type="button"
+            class="app-btn secondary shell-icon-btn help-trigger"
+            data-help-key="about-overview"
+            title="Ajuda sobre o projeto"
+          >
+            <i class="bi bi-question-lg"></i>
+          </button>
         </div>
       </div>
-      <div class="discord-frame-shell">
-        <iframe src="https://discord.com/widget?id=1061814371174596708&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+
+      <div class="about-summary-hero">
+        <div class="about-project-line">
+          <span class="about-project-name">DSW Wheel Hub</span>
+          <span id="aboutVersionBadge" class="badge">v1.0.0</span>
+        </div>
+
+        <a
+          class="app-btn primary about-link-btn"
+          href="https://github.com/DIY-Steering-Wheel/DSW-wheel-hub"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <i class="bi bi-github me-2"></i>GitHub do projeto
+        </a>
+
+        <div id="aboutSummaryMeta" class="metric-grid mt-3"></div>
       </div>
     </article>
 
     <article class="card">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Criadores</div>
-          <h3>Autores e projeto original</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Links uteis</div>
+            <h3>Acesso rapido</h3>
+          </div>
+          <button
+            type="button"
+            class="app-btn secondary shell-icon-btn help-trigger"
+            data-help-key="about-links"
+            title="Ajuda sobre links uteis"
+          >
+            <i class="bi bi-question-lg"></i>
+          </button>
         </div>
       </div>
+
+      <div id="aboutLinks" class="about-link-grid"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Firmware</div>
+            <h3>Projeto conectado</h3>
+          </div>
+          <button
+            type="button"
+            class="app-btn secondary shell-icon-btn help-trigger"
+            data-help-key="about-firmware"
+            title="Ajuda sobre firmware"
+          >
+            <i class="bi bi-question-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="aboutProjectInfo" class="note-stack"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Creditos</div>
+            <h3>Autores essenciais</h3>
+          </div>
+          <button
+            type="button"
+            class="app-btn secondary shell-icon-btn help-trigger"
+            data-help-key="about-credits"
+            title="Ajuda sobre creditos"
+          >
+            <i class="bi bi-question-lg"></i>
+          </button>
+        </div>
+      </div>
+
       <div id="aboutCreators" class="note-stack"></div>
-    </article>
-
-    <article class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-kicker">Licencas</div>
-          <h3>Componentes e atribuicoes</h3>
-        </div>
-      </div>
-      <div id="aboutLicenses" class="note-stack"></div>
-    </article>
-
-    <article class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-kicker">Avisos</div>
-          <h3>Uso, firmware e responsabilidade</h3>
-        </div>
-      </div>
-      <div id="aboutWarnings" class="note-stack"></div>
     </article>
   </div>
 </section>
-
         <section id="tab-wheel" class="tab-page">
   <div class="page-grid two-col">
     <article class="card">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Basico do volante</div>
-          <h3>Geometria, encoder e ganho principal</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Basico do volante</div>
+            <h3>Geometria, encoder e ganho principal</h3>
+          </div>
+          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="wheel-basics" title="Ajuda do basico"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
       <div class="field-grid two-col">
         <div class="slider-row field-wide">
           <label>Rotacao do volante (graus)</label>
-          <input id="wheelRotationDegRange" type="range" min="30" max="1244" step="1">
-          <input id="wheelRotationDeg" type="number" min="30" max="1244" step="1">
+          <input id="wheelRotationDegRange" type="range" min="30" max="2244" step="1">
+          <input id="wheelRotationDeg" type="number" min="30" max="2244" step="1">
         </div>
         <div class="slider-row field-wide">
           <label>Ganho geral de Force Feedback</label>
@@ -168,14 +231,16 @@
         </label>
         <div id="wheelOutputResolutionHint" class="note-panel field-wide">Aguardando leitura da firmware.</div>
       </div>
-      <div class="note-panel">Rotacao define o curso total do volante. CPR sao as contagens finais por volta lidas pela firmware. PPR sao os pulsos fisicos do encoder; em encoder em quadratura, normalmente `CPR = PPR x 4`.</div>
     </article>
 
     <article class="card">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Acoes do volante</div>
-          <h3>Acoes do volante</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Acoes do volante</div>
+            <h3>Acoes do volante</h3>
+          </div>
+          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="wheel-actions" title="Ajuda das acoes"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
       <div class="button-stack">
@@ -183,14 +248,16 @@
         <button id="wheelCalibrate" class="app-btn secondary">Recalibrar volante</button>
         <button id="wheelResetZ" class="app-btn secondary">Resetar Z-index</button>
       </div>
-      <div class="note-panel">Os comandos disponiveis dependem do firmware conectado e so aparecem quando fizerem sentido para a base.</div>
     </article>
 
     <article class="card field-wide">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Diagnostico do dispositivo</div>
-          <h3>Monitor do joystick no Windows</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Diagnostico do dispositivo</div>
+            <h3>Monitor do joystick no Windows</h3>
+          </div>
+          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="wheel-monitor" title="Ajuda do monitor"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
       <div class="metric-grid">
@@ -216,7 +283,7 @@
             <h3>Game Effects e Desktop Effects</h3>
           </div>
           <div class="inline-actions compact-actions">
-            <button id="ffbOpenGuideModal" class="app-btn secondary">O que faz cada ajuste?</button>
+            <button id="ffbOpenGuideModal" class="app-btn secondary shell-icon-btn" title="Ajuda do Force Feedback"><i class="bi bi-question-lg"></i></button>
             <button id="ffbOpenOutputModal" class="app-btn secondary shell-icon-btn" title="Abrir configuracoes de saida"><i class="bi bi-gear-fill"></i></button>
           </div>
         </div>
@@ -238,22 +305,18 @@
       <div class="desktop-effects-grid mb-3">
         <div class="desktop-effect-card">
           <div class="desktop-effect-head"><strong>Auto-center</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Ativo</span></label></div>
-          <small class="desktop-effect-copy">Recentro artificial usado fora dos efeitos enviados pelo jogo.</small>
           <div class="slider-row slider-row-compact"><input id="ffbCenterMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbCenterMirrorInput" type="number" min="0" max="200"></div>
         </div>
         <div class="desktop-effect-card">
           <div class="desktop-effect-head"><strong>Damper</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopDamper" type="checkbox"><span>Ativo</span></label></div>
-          <small class="desktop-effect-copy">Resistencia proporcional a velocidade do movimento.</small>
           <div class="slider-row slider-row-compact"><input id="ffbDamperMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbDamperMirrorInput" type="number" min="0" max="200"></div>
         </div>
         <div class="desktop-effect-card">
           <div class="desktop-effect-head"><strong>Inertia</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopInertia" type="checkbox"><span>Ativo</span></label></div>
-          <small class="desktop-effect-copy">Simula massa e oposicao a aceleracoes bruscas.</small>
           <div class="slider-row slider-row-compact"><input id="ffbInertiaMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbInertiaMirrorInput" type="number" min="0" max="200"></div>
         </div>
         <div class="desktop-effect-card">
           <div class="desktop-effect-head"><strong>Friction</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopFriction" type="checkbox"><span>Ativo</span></label></div>
-          <small class="desktop-effect-copy">Atrito seco para dar peso em pequenas mudancas.</small>
           <div class="slider-row slider-row-compact"><input id="ffbFrictionMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbFrictionMirrorInput" type="number" min="0" max="200"></div>
         </div>
       </div>
@@ -378,9 +441,12 @@
   <div class="page-grid two-col">
     <article class="card">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Cambio XY</div>
-          <h3>Matriz visual do cambio</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Cambio XY</div>
+            <h3>Matriz visual do cambio</h3>
+          </div>
+          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="shifter-grid" title="Ajuda do cambio"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
       <div class="metric-grid">
@@ -423,12 +489,14 @@
 
     <article class="card">
       <div class="card-head">
-        <div>
-          <div class="card-kicker">Configuracao</div>
-          <h3>Faixas e comportamento</h3>
+        <div class="section-headline">
+          <div>
+            <div class="card-kicker">Configuracao</div>
+            <h3>Faixas e comportamento</h3>
+          </div>
+          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="shifter-settings" title="Ajuda das configuracoes"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
-      <div class="note-panel">Arraste as divisorias no quadro ao lado para definir os cortes de marcha. O `N` do centro representa neutro real: nenhuma marcha encaixada. A bolinha sempre mostra a posicao atual do cambio.</div>
       <div class="field-grid two-col mt-3">
         <label class="toggle-row"><input id="shifterCfgReverse" type="checkbox"><span>Reverse invertido</span></label>
         <label class="toggle-row"><input id="shifterCfgGear8" type="checkbox"><span>Modo 8 marchas</span></label>
@@ -509,9 +577,12 @@
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content modal-glass">
         <div class="modal-header">
-          <div>
-            <div class="mini-label">Perfis</div>
-            <h5 class="modal-title mb-0">Gerenciador de perfis</h5>
+          <div class="section-headline modal-headline">
+            <div>
+              <div class="mini-label">Perfis</div>
+              <h5 class="modal-title mb-0">Gerenciador de perfis</h5>
+            </div>
+            <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="profiles-manager" title="Ajuda dos perfis"><i class="bi bi-question-lg"></i></button>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
@@ -542,7 +613,7 @@
                     <h3 id="profileOptionsCurrentName">Nenhum perfil selecionado</h3>
                   </div>
                 </div>
-                <div id="profileOptionsHint" class="note-panel">Selecione um perfil na lista ou crie um novo a partir da base conectada.</div>
+                <div id="profileOptionsHint" class="note-panel">Selecione um perfil para editar ou crie um novo a partir da base conectada.</div>
               </div>
 
               <div class="card shell-card">
@@ -604,9 +675,12 @@
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content modal-glass">
         <div class="modal-header">
-          <div>
-            <div class="mini-label">Firmware</div>
-            <h5 class="modal-title mb-0">Wizard de gravacao por bootloader</h5>
+          <div class="section-headline modal-headline">
+            <div>
+              <div class="mini-label">Firmware</div>
+              <h5 class="modal-title mb-0">Wizard de gravacao por bootloader</h5>
+            </div>
+            <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="firmware-wizard" title="Ajuda do firmware"><i class="bi bi-question-lg"></i></button>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
@@ -639,7 +713,6 @@
                         <select id="firmwareBoardSelect" class="form-select"></select>
                       </label>
                     </div>
-                    <div class="note-panel mb-3">Com a placa no modo normal, capture a lista atual de portas. Isso vira a referencia para detectar o bootloader depois.</div>
                     <button id="firmwareCaptureBaseline" class="app-btn primary">Capturar portas atuais</button>
                     <div class="port-list-shell mt-3">
                       <div class="mini-label mb-2">Portas vistas agora</div>
@@ -681,9 +754,8 @@
                   <div class="card-body">
                     <div class="mini-label mb-2">Etapa 3</div>
                     <h3 class="wizard-title">Busca do firmware mais compativel</h3>
-                    <div class="note-panel mb-3">Marque os recursos desejados. Se nao existir um build perfeito, o app sugere o que cobre mais funcoes e lista o que esta faltando.</div>
                     <div class="inline-actions mb-3">
-                      <button id="firmwareFeaturesInfo" class="app-btn secondary">O que significa cada recurso?</button>
+                      <button id="firmwareFeaturesInfo" class="app-btn secondary shell-icon-btn-wide"><i class="bi bi-question-lg me-2"></i>Recursos do firmware</button>
                     </div>
                     <div id="firmwareFeatureFilters" class="filter-grid mb-3"></div>
                     <div class="field-grid two-col">
@@ -716,7 +788,6 @@
                         <strong id="firmwareSummaryFirmware">Nenhum</strong>
                       </div>
                     </div>
-                    <div class="note-panel mb-3">Quando voce clicar em armar gravacao, o app vai esperar o bootloader aparecer de novo. Entao aperte o botao vermelho mais uma vez. Assim que a porta reaparecer, o envio comeca automaticamente.</div>
                     <textarea id="firmwareFlashLog" class="form-control profile-json" readonly></textarea>
                   </div>
                 </div>
@@ -761,9 +832,12 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content modal-glass">
         <div class="modal-header">
-          <div>
-            <div class="mini-label">Force Feedback</div>
-            <h5 class="modal-title mb-0">Saida e mapeamento</h5>
+          <div class="section-headline modal-headline">
+            <div>
+              <div class="mini-label">Force Feedback</div>
+              <h5 class="modal-title mb-0">Saida e mapeamento</h5>
+            </div>
+            <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="ffb-output" title="Ajuda da saida FFB"><i class="bi bi-question-lg"></i></button>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
@@ -805,13 +879,6 @@
               </select>
             </label>
           </div>
-          <div class="note-stack mt-3">
-            <div class="note">Monitor serial do FFB: envia telemetria dos efeitos pela serial e ajuda em diagnostico.</div>
-            <div class="note">PWM com correcao de fase: muda o modo de geracao PWM. Use apenas se seu driver ou motor responder melhor assim.</div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <div class="note-panel">Bits 5-7 do byte E escolhem qual eixo alimenta o xFFB analogico quando a firmware suporta essa troca.</div>
         </div>
       </div>
     </div>
@@ -852,7 +919,13 @@
                   <div class="card-kicker">Diagramas</div>
                   <h3 class="wiring-modal-title">Arquivos disponiveis</h3>
                 </div>
-                <button id="wiringOpenExternal" type="button" class="app-btn secondary shell-icon-btn-wide" disabled><i class="bi bi-box-arrow-up-right me-2"></i>Abrir externamente</button>
+                <div class="compact-actions wiring-toolbar-actions">
+                  <label class="toggle-row mini-toggle wiring-filter-toggle">
+                    <input id="wiringImagesOnly" type="checkbox" checked>
+                    <span>So imagens</span>
+                  </label>
+                  <button id="wiringOpenExternal" type="button" class="app-btn secondary shell-icon-btn-wide" disabled><i class="bi bi-box-arrow-up-right me-2"></i>Abrir externamente</button>
+                </div>
               </div>
               <div id="wiringList" class="wiring-list"></div>
             </aside>
@@ -875,6 +948,40 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="uiHelpModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Ajuda</div>
+            <h5 id="uiHelpTitle" class="modal-title mb-0">Ajuda rapida</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="help-topic-grid">
+            <div class="help-topic-card">
+              <div class="card-kicker">O que faz</div>
+              <div id="uiHelpWhat" class="help-topic-copy">-</div>
+            </div>
+            <div class="help-topic-card">
+              <div class="card-kicker">Quando usar</div>
+              <div id="uiHelpWhen" class="help-topic-copy">-</div>
+            </div>
+            <div class="help-topic-card">
+              <div class="card-kicker">Cuidados</div>
+              <div id="uiHelpCare" class="help-topic-copy">-</div>
+            </div>
+            <div class="help-topic-card">
+              <div class="card-kicker">Exemplo</div>
+              <div id="uiHelpExample" class="help-topic-copy">-</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

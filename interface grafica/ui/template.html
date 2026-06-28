@@ -61,9 +61,12 @@
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content modal-glass">
         <div class="modal-header">
-          <div>
-            <div class="mini-label">Perfis</div>
-            <h5 class="modal-title mb-0">Gerenciador de perfis</h5>
+          <div class="section-headline modal-headline">
+            <div>
+              <div class="mini-label">Perfis</div>
+              <h5 class="modal-title mb-0">Gerenciador de perfis</h5>
+            </div>
+            <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="profiles-manager" title="Ajuda dos perfis"><i class="bi bi-question-lg"></i></button>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
@@ -94,7 +97,7 @@
                     <h3 id="profileOptionsCurrentName">Nenhum perfil selecionado</h3>
                   </div>
                 </div>
-                <div id="profileOptionsHint" class="note-panel">Selecione um perfil na lista ou crie um novo a partir da base conectada.</div>
+                <div id="profileOptionsHint" class="note-panel">Selecione um perfil para editar ou crie um novo a partir da base conectada.</div>
               </div>
 
               <div class="card shell-card">
@@ -156,9 +159,12 @@
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content modal-glass">
         <div class="modal-header">
-          <div>
-            <div class="mini-label">Firmware</div>
-            <h5 class="modal-title mb-0">Wizard de gravacao por bootloader</h5>
+          <div class="section-headline modal-headline">
+            <div>
+              <div class="mini-label">Firmware</div>
+              <h5 class="modal-title mb-0">Wizard de gravacao por bootloader</h5>
+            </div>
+            <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="firmware-wizard" title="Ajuda do firmware"><i class="bi bi-question-lg"></i></button>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
@@ -191,7 +197,6 @@
                         <select id="firmwareBoardSelect" class="form-select"></select>
                       </label>
                     </div>
-                    <div class="note-panel mb-3">Com a placa no modo normal, capture a lista atual de portas. Isso vira a referencia para detectar o bootloader depois.</div>
                     <button id="firmwareCaptureBaseline" class="app-btn primary">Capturar portas atuais</button>
                     <div class="port-list-shell mt-3">
                       <div class="mini-label mb-2">Portas vistas agora</div>
@@ -233,9 +238,8 @@
                   <div class="card-body">
                     <div class="mini-label mb-2">Etapa 3</div>
                     <h3 class="wizard-title">Busca do firmware mais compativel</h3>
-                    <div class="note-panel mb-3">Marque os recursos desejados. Se nao existir um build perfeito, o app sugere o que cobre mais funcoes e lista o que esta faltando.</div>
                     <div class="inline-actions mb-3">
-                      <button id="firmwareFeaturesInfo" class="app-btn secondary">O que significa cada recurso?</button>
+                      <button id="firmwareFeaturesInfo" class="app-btn secondary shell-icon-btn-wide"><i class="bi bi-question-lg me-2"></i>Recursos do firmware</button>
                     </div>
                     <div id="firmwareFeatureFilters" class="filter-grid mb-3"></div>
                     <div class="field-grid two-col">
@@ -268,7 +272,6 @@
                         <strong id="firmwareSummaryFirmware">Nenhum</strong>
                       </div>
                     </div>
-                    <div class="note-panel mb-3">Quando voce clicar em armar gravacao, o app vai esperar o bootloader aparecer de novo. Entao aperte o botao vermelho mais uma vez. Assim que a porta reaparecer, o envio comeca automaticamente.</div>
                     <textarea id="firmwareFlashLog" class="form-control profile-json" readonly></textarea>
                   </div>
                 </div>
@@ -313,9 +316,12 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content modal-glass">
         <div class="modal-header">
-          <div>
-            <div class="mini-label">Force Feedback</div>
-            <h5 class="modal-title mb-0">Saida e mapeamento</h5>
+          <div class="section-headline modal-headline">
+            <div>
+              <div class="mini-label">Force Feedback</div>
+              <h5 class="modal-title mb-0">Saida e mapeamento</h5>
+            </div>
+            <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="ffb-output" title="Ajuda da saida FFB"><i class="bi bi-question-lg"></i></button>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
@@ -357,13 +363,6 @@
               </select>
             </label>
           </div>
-          <div class="note-stack mt-3">
-            <div class="note">Monitor serial do FFB: envia telemetria dos efeitos pela serial e ajuda em diagnostico.</div>
-            <div class="note">PWM com correcao de fase: muda o modo de geracao PWM. Use apenas se seu driver ou motor responder melhor assim.</div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <div class="note-panel">Bits 5-7 do byte E escolhem qual eixo alimenta o xFFB analogico quando a firmware suporta essa troca.</div>
         </div>
       </div>
     </div>
@@ -404,7 +403,13 @@
                   <div class="card-kicker">Diagramas</div>
                   <h3 class="wiring-modal-title">Arquivos disponiveis</h3>
                 </div>
-                <button id="wiringOpenExternal" type="button" class="app-btn secondary shell-icon-btn-wide" disabled><i class="bi bi-box-arrow-up-right me-2"></i>Abrir externamente</button>
+                <div class="compact-actions wiring-toolbar-actions">
+                  <label class="toggle-row mini-toggle wiring-filter-toggle">
+                    <input id="wiringImagesOnly" type="checkbox" checked>
+                    <span>So imagens</span>
+                  </label>
+                  <button id="wiringOpenExternal" type="button" class="app-btn secondary shell-icon-btn-wide" disabled><i class="bi bi-box-arrow-up-right me-2"></i>Abrir externamente</button>
+                </div>
               </div>
               <div id="wiringList" class="wiring-list"></div>
             </aside>
@@ -427,6 +432,40 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="uiHelpModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Ajuda</div>
+            <h5 id="uiHelpTitle" class="modal-title mb-0">Ajuda rapida</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="help-topic-grid">
+            <div class="help-topic-card">
+              <div class="card-kicker">O que faz</div>
+              <div id="uiHelpWhat" class="help-topic-copy">-</div>
+            </div>
+            <div class="help-topic-card">
+              <div class="card-kicker">Quando usar</div>
+              <div id="uiHelpWhen" class="help-topic-copy">-</div>
+            </div>
+            <div class="help-topic-card">
+              <div class="card-kicker">Cuidados</div>
+              <div id="uiHelpCare" class="help-topic-copy">-</div>
+            </div>
+            <div class="help-topic-card">
+              <div class="card-kicker">Exemplo</div>
+              <div id="uiHelpExample" class="help-topic-copy">-</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -8,7 +8,7 @@
             <h3>Game Effects e Desktop Effects</h3>
           </div>
           <div class="inline-actions compact-actions">
-            <button id="ffbOpenGuideModal" class="app-btn secondary">O que faz cada ajuste?</button>
+            <button id="ffbOpenGuideModal" class="app-btn secondary shell-icon-btn" title="Ajuda do Force Feedback"><i class="bi bi-question-lg"></i></button>
             <button id="ffbOpenOutputModal" class="app-btn secondary shell-icon-btn" title="Abrir configuracoes de saida"><i class="bi bi-gear-fill"></i></button>
           </div>
         </div>
@@ -30,22 +30,18 @@
       <div class="desktop-effects-grid mb-3">
         <div class="desktop-effect-card">
           <div class="desktop-effect-head"><strong>Auto-center</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopAutoCenter" type="checkbox"><span>Ativo</span></label></div>
-          <small class="desktop-effect-copy">Recentro artificial usado fora dos efeitos enviados pelo jogo.</small>
           <div class="slider-row slider-row-compact"><input id="ffbCenterMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbCenterMirrorInput" type="number" min="0" max="200"></div>
         </div>
         <div class="desktop-effect-card">
           <div class="desktop-effect-head"><strong>Damper</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopDamper" type="checkbox"><span>Ativo</span></label></div>
-          <small class="desktop-effect-copy">Resistencia proporcional a velocidade do movimento.</small>
           <div class="slider-row slider-row-compact"><input id="ffbDamperMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbDamperMirrorInput" type="number" min="0" max="200"></div>
         </div>
         <div class="desktop-effect-card">
           <div class="desktop-effect-head"><strong>Inertia</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopInertia" type="checkbox"><span>Ativo</span></label></div>
-          <small class="desktop-effect-copy">Simula massa e oposicao a aceleracoes bruscas.</small>
           <div class="slider-row slider-row-compact"><input id="ffbInertiaMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbInertiaMirrorInput" type="number" min="0" max="200"></div>
         </div>
         <div class="desktop-effect-card">
           <div class="desktop-effect-head"><strong>Friction</strong><label class="toggle-row mini-toggle"><input id="ffbDesktopFriction" type="checkbox"><span>Ativo</span></label></div>
-          <small class="desktop-effect-copy">Atrito seco para dar peso em pequenas mudancas.</small>
           <div class="slider-row slider-row-compact"><input id="ffbFrictionMirrorRange" type="range" min="0" max="200" step="1"><input id="ffbFrictionMirrorInput" type="number" min="0" max="200"></div>
         </div>
       </div>

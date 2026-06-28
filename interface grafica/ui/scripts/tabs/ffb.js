@@ -310,12 +310,15 @@
   function renderGuide() {
     var wrap = window.BRWheelApp.byId("ffbGuideList");
     var items = [
-      "Ganho geral: escala principal do Force Feedback antes dos demais ganhos.",
-      "Game Effects: ganhos vindos do jogo, como constante, periodic, spring e afins.",
-      "Desktop Effects: efeitos locais do driver/firmware, uteis para teste ou uso fora do jogo.",
-      "Monitor serial do FFB: envia informacoes dos efeitos para a serial, util para diagnostico.",
-      "PWM com correcao de fase: muda a forma como o timer gera PWM; use apenas se o driver/motor responder melhor nesse modo.",
-      "Eixo xFFB: so aparece em firmwares que realmente permitem remapear o eixo analogico do FFB."
+      "Ganho geral: escala principal aplicada antes dos demais efeitos do jogo.",
+      "Constante, periodic, spring, inertia, friction e damper ajustam familias diferentes de efeito vindas do jogo.",
+      "Auto-center desktop: recentro local para uso fora do jogo ou testes rapidos.",
+      "Damper desktop: adiciona resistencia proporcional ao movimento do volante.",
+      "Inertia desktop: simula massa e oposicao a mudancas bruscas de velocidade.",
+      "Friction desktop: adiciona atrito seco em movimentos pequenos e lentos.",
+      "Monitor serial do FFB: envia telemetria pela serial para diagnostico.",
+      "PWM com correcao de fase: altere apenas se o conjunto motor/driver responder melhor nesse modo.",
+      "Eixo xFFB: so aparece quando a firmware realmente permite remapear o eixo analogico do FFB."
     ];
     window.BRWheelApp.clearChildren(wrap);
     items.forEach(function (item) {

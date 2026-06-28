@@ -16,9 +16,104 @@
         firmware_catalog: [],
         firmware_feature_options: [],
         output_frequency_options: []
-      }
+      },
+      helpTopics: {}
     },
     tabs: {}
+  };
+
+  var defaultHelpTopics = {
+    "about-overview": {
+      title: "About",
+      what: "Resume o app, a versao instalada, o link oficial do projeto e o estado geral da firmware conectada.",
+      when: "Use quando quiser confirmar rapidamente qual build do app e qual base estao em uso.",
+      care: "Se a placa nao estiver conectada, alguns dados do firmware podem aparecer vazios.",
+      example: "Antes de atualizar firmware, confira aqui se o app e a base detectada sao os esperados."
+    },
+    "about-links": {
+      title: "Links uteis",
+      what: "Agrupa os atalhos principais do projeto, como repositorio, issues e comunidade.",
+      when: "Use quando precisar baixar atualizacoes, relatar problemas ou buscar apoio.",
+      care: "Os links externos abrem fora do app.",
+      example: "Abra Issues para relatar um bug ou o Discord para pedir ajuda rapida."
+    },
+    "about-firmware": {
+      title: "Projeto conectado",
+      what: "Mostra o firmware detectado, a placa, as flags e os recursos principais da base conectada.",
+      when: "Use para conferir compatibilidade antes de mexer em FFB, pedais ou gravacao.",
+      care: "Os dados dependem da leitura atual da placa.",
+      example: "Se a flag de XY nao aparecer, a aba de cambio pode ficar indisponivel."
+    },
+    "about-credits": {
+      title: "Creditos",
+      what: "Lista os autores essenciais e a origem do trabalho de firmware usado pelo projeto.",
+      when: "Use para referencia historica ou para chegar aos repositorios dos autores.",
+      care: "Nem todos os autores historicos possuem link publico confirmado aqui.",
+      example: "Abra o GitHub do autor principal para acompanhar a linha do firmware."
+    },
+    "wheel-basics": {
+      title: "Basico do volante",
+      what: "Reune rotacao maxima, encoder CPR/PPR, ganho geral de FFB e a resolucao de saida lida da firmware.",
+      when: "Use ao configurar a base logo apos conectar ou trocar de firmware.",
+      care: "CPR e PPR precisam ser coerentes com o encoder fisico para evitar escala errada.",
+      example: "Se seu encoder for 600 PPR, o valor final costuma ficar em 2400 CPR."
+    },
+    "wheel-actions": {
+      title: "Acoes do volante",
+      what: "Executa comandos de servico como recentralizar, recalibrar e resetar Z-index quando a firmware suportar.",
+      when: "Use apos trocar encoder, recenter ou quando o eixo perder referencia.",
+      care: "Alguns botoes so aparecem em firmwares que realmente suportam a acao.",
+      example: "Use Recentralizar volante quando o centro fisico e o centro logico estiverem desalinhados."
+    },
+    "wheel-monitor": {
+      title: "Monitor do joystick",
+      what: "Mostra o dispositivo detectado no Windows, os eixos ativos e os botoes pressionados em tempo real.",
+      when: "Use para diagnostico rapido depois de conectar a placa ou aplicar um perfil.",
+      care: "A leitura depende de o Windows reconhecer corretamente o joystick pelo VID/PID.",
+      example: "Gire o volante e pressione botoes para validar se tudo esta chegando ao sistema."
+    },
+    "firmware-tools": {
+      title: "Ferramentas do Lobby",
+      what: "Agrupa gravacao de firmware, utilitarios externos e o navegador de ligacoes eletricas.",
+      when: "Use antes de configurar a base ou quando precisar testar, atualizar ou consultar diagramas.",
+      care: "Ferramentas externas abrem fora do app e podem exigir permissao do Windows.",
+      example: "Abra Ligacoes Eletricas para conferir um pinout antes de soldar sensores ou botoes."
+    },
+    "firmware-wizard": {
+      title: "Wizard de firmware",
+      what: "Guia a captura das portas USB, a deteccao do bootloader e a escolha do firmware mais compativel.",
+      when: "Use ao gravar firmware em Pro Micro, Leonardo ou Micro com bootloader AVR109.",
+      care: "Escolha a placa correta e nao desconecte a USB durante a gravacao.",
+      example: "Capture as portas atuais, entre em bootloader e deixe o app detectar a nova porta automaticamente."
+    },
+    "profiles-manager": {
+      title: "Gerenciador de perfis",
+      what: "Permite criar, sobrescrever, renomear, apagar e aplicar perfis de configuracao da base.",
+      when: "Use para salvar presets de volante, FFB, pedais e cambio.",
+      care: "Aplicar um perfil envia configuracoes diretamente para a base conectada.",
+      example: "Crie um perfil para drift e outro para formula sem precisar refazer todos os ajustes."
+    },
+    "shifter-grid": {
+      title: "Matriz visual do cambio",
+      what: "Exibe as zonas do eixo X/Y, a marcha atual, o neutro real e a posicao ao vivo do seletor.",
+      when: "Use ao calibrar um cambio H analogico XY.",
+      care: "O N central representa neutro real, entao ele deve aparecer quando nenhuma marcha estiver encaixada.",
+      example: "Se a bolinha ficar entre zonas, ajuste as divisorias ate a marcha correta aparecer."
+    },
+    "shifter-settings": {
+      title: "Faixas e comportamento",
+      what: "Controla os cortes X/Y e opcoes como reverse invertido, modo 8 marchas e inversao de eixos.",
+      when: "Use quando o mapeamento fisico do cambio nao bate com a marcha reconhecida.",
+      care: "Confirme qual porta e qual logica de reverse sua montagem usa antes de inverter sinais.",
+      example: "Ative modo 8 marchas apenas se o hardware realmente tiver essa posicao adicional."
+    },
+    "ffb-output": {
+      title: "Saida e mapeamento FFB",
+      what: "Agrupa o modo de saida, frequencia PWM/RCM, correcao de fase, monitor serial e eixo do xFFB quando suportado.",
+      when: "Use ao casar a firmware com seu driver, ponte H ou saida analogica.",
+      care: "Mude a frequencia e a correcao de fase apenas se souber como seu hardware responde.",
+      example: "Se sua ponte H trabalha melhor com outra frequencia PWM, ajuste aqui e teste a resposta."
+    }
   };
 
   function byId(id) {
@@ -125,6 +220,19 @@
       return null;
     }
     return window.bootstrap.Modal.getOrCreateInstance(byId(id));
+  }
+
+  function openHelp(key) {
+    var topic = app.state.helpTopics[key] || defaultHelpTopics[key];
+    if (!topic) {
+      return;
+    }
+    setText("uiHelpTitle", topic.title, "");
+    setText("uiHelpWhat", topic.what, "");
+    setText("uiHelpWhen", topic.when, "");
+    setText("uiHelpCare", topic.care, "");
+    setText("uiHelpExample", topic.example || "-", "");
+    getModal("uiHelpModal").show();
   }
 
   function setButtonState(id, enabled) {
@@ -374,6 +482,17 @@
         }
       };
     }
+  }
+
+  function bindHelpTriggers() {
+    document.addEventListener("click", function (event) {
+      var trigger = event.target.closest(".help-trigger");
+      if (!trigger) {
+        return;
+      }
+      event.preventDefault();
+      openHelp(trigger.getAttribute("data-help-key"));
+    });
   }
 
   function lockTabs(snapshot) {
@@ -1209,6 +1328,7 @@
     app.state.booted = true;
 
     bindTabs();
+    bindHelpTriggers();
     bindDock();
     bindProfileOptionsModal();
     bindProfileJsonModal();
@@ -1238,6 +1358,7 @@
   app.render = render;
   app.toggleHidden = toggleHidden;
   app.getModal = getModal;
+  app.openHelp = openHelp;
   app.state = app.state;
 
   window.BRWheelApp = app;
