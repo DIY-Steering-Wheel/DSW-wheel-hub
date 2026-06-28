@@ -233,8 +233,8 @@ def _frequency_option(index: int) -> dict[str, Any]:
 class WheelController:
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.app_dir = root / "wheel_control_webview"
-        self.profile_dir = root / "wheel_control_webview" / "profiles"
+        self.app_dir = root / "interface grafica"
+        self.profile_dir = self.app_dir / "profiles"
         self.profile_dir.mkdir(parents=True, exist_ok=True)
         self.firmware_sources = {
             "promicro": {
@@ -255,6 +255,7 @@ class WheelController:
         self.avrdude_path = self.app_dir / "avrdude.exe"
         self.avrdude_conf_path = self.app_dir / "avrdude.conf"
         self.misc_programs_dir = self.app_dir / "FFB_misc_programs"
+        self.wirings_dir = self._resolve_wirings_dir()
 
         self._lock = threading.RLock()
         self._serial: serial.Serial | None = None
@@ -340,6 +341,16 @@ class WheelController:
         self._refresh_requested = threading.Event()
         self._worker_thread = threading.Thread(target=self._background_loop, name="BRWheelBackground", daemon=True)
         self._worker_thread.start()
+
+    def _resolve_wirings_dir(self) -> Path:
+        candidates = [
+            self.app_dir / "wirings",
+            self.root / "wirings",
+        ]
+        for candidate in candidates:
+            if candidate.exists():
+                return candidate
+        return candidates[0]
 
     def _empty_capabilities(self) -> dict[str, Any]:
         return {
@@ -593,6 +604,38 @@ class WheelController:
                     "title": labels.get(path.name, path.stem),
                     "description": descriptions.get(path.name, "Ferramenta auxiliar do ecossistema FFB."),
                     "path": str(path),
+                }
+            )
+        return items
+
+    def _wiring_preview_type(self, path: Path) -> str:
+        suffix = path.suffix.lower()
+        if suffix in {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".svg"}:
+            return "image"
+        if suffix == ".pdf":
+            return "pdf"
+        return "unsupported"
+
+    def _wiring_title(self, path: Path) -> str:
+        title = path.stem.replace("_", " ").replace("-", " ").strip()
+        title = re.sub(r"\s+", " ", title)
+        return title[:1].upper() + title[1:] if title else path.stem
+
+    def _wiring_files(self) -> list[dict[str, Any]]:
+        items: list[dict[str, Any]] = []
+        if not self.wirings_dir.exists():
+            return items
+        for path in sorted(item for item in self.wirings_dir.iterdir() if item.is_file()):
+            preview_type = self._wiring_preview_type(path)
+            items.append(
+                {
+                    "file": path.name,
+                    "title": self._wiring_title(path),
+                    "extension": path.suffix.lower(),
+                    "preview_type": preview_type,
+                    "preview_available": preview_type != "unsupported",
+                    "file_uri": path.resolve().as_uri(),
+                    "path": str(path.resolve()),
                 }
             )
         return items
@@ -1981,6 +2024,7 @@ class WheelController:
                     "output_frequency_options": OUTPUT_FREQUENCY_OPTIONS,
                     "firmware_board": self._firmware_board_payload(),
                     "misc_programs": self._misc_programs(),
+                    "wiring_files": self._wiring_files(),
                 }
             )
 
@@ -1991,6 +2035,16 @@ class WheelController:
         try:
             os.startfile(str(target))
             return {"ok": True, "message": f"Abrindo {target.stem}."}
+        except OSError as exc:
+            return {"ok": False, "message": f"Falha ao abrir {target.name}: {exc}"}
+
+    def open_wiring_file(self, file_name: str) -> dict[str, Any]:
+        target = self.wirings_dir / Path(file_name).name
+        if not target.exists() or not target.is_file():
+            return {"ok": False, "message": "Diagrama nao encontrado."}
+        try:
+            os.startfile(str(target))
+            return {"ok": True, "message": f"Abrindo {target.name} externamente."}
         except OSError as exc:
             return {"ok": False, "message": f"Falha ao abrir {target.name}: {exc}"}
 
@@ -2095,6 +2149,10 @@ class WebApi:
 
     def launch_misc_program(self, file_name: str) -> dict[str, Any]:
         result = self.controller.launch_misc_program(file_name)
+        return {**result, "data": self.controller.get_snapshot()}
+
+    def open_wiring_file(self, file_name: str) -> dict[str, Any]:
+        result = self.controller.open_wiring_file(file_name)
         return {**result, "data": self.controller.get_snapshot()}
 
     def capture_bootloader_baseline(self) -> dict[str, Any]:

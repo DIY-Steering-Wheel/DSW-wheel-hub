@@ -8,10 +8,11 @@ import tempfile
 import webview
 
 if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from wheel_control_webview.controller import WebApi, WheelController
+    from backend import WebApi, WheelController
 else:
-    from .controller import WebApi, WheelController
+    from backend import WebApi, WheelController
 
 
 TAB_ORDER = [
@@ -26,7 +27,7 @@ TAB_ORDER = [
 
 
 def build_ui(root: Path) -> Path:
-    ui_root = root / "wheel_control_webview" / "ui"
+    ui_root = root / "interface grafica" / "ui"
     template = (ui_root / "template.html").read_text(encoding="utf-8")
 
     for tab_name in TAB_ORDER:

@@ -1,5 +1,9 @@
 (function () {
   var module = {};
+  var wiringState = {
+    selectedFile: "",
+    zoom: 1
+  };
 
   module.bind = function (app) {
     app.byId("connectionRefreshSnapshot").onclick = function () {
@@ -9,6 +13,38 @@
     app.byId("connectionOpenFirmware").onclick = function () {
       app.getModal("firmwareModal").show();
     };
+
+    app.byId("connectionOpenWirings").onclick = function () {
+      ensureWiringSelection(app);
+      renderWiringModal(app);
+      app.getModal("wiringModal").show();
+    };
+
+    app.byId("wiringOpenExternal").onclick = function () {
+      var selected = currentWiring(app);
+      if (!selected) {
+        return;
+      }
+      app.callApi("open_wiring_file", [selected.file]);
+    };
+
+    app.byId("wiringZoomIn").onclick = function () {
+      updateZoom(0.1, app);
+    };
+
+    app.byId("wiringZoomOut").onclick = function () {
+      updateZoom(-0.1, app);
+    };
+
+    app.byId("wiringZoomReset").onclick = function () {
+      wiringState.zoom = 1;
+      renderWiringPreview(app);
+    };
+
+    app.byId("wiringModal").addEventListener("show.bs.modal", function () {
+      ensureWiringSelection(app);
+      renderWiringModal(app);
+    });
   };
 
   module.render = function (snapshot, app) {
@@ -32,6 +68,11 @@
     renderDetails(snapshot, app);
     renderTools(app);
     app.byId("connectionOpenFirmware").disabled = !(app.state.staticData && app.state.staticData.firmware_catalog && app.state.staticData.firmware_catalog.length);
+    app.byId("connectionOpenWirings").disabled = !(((app.state.staticData && app.state.staticData.wiring_files) || []).length);
+    if (isWiringModalOpen(app)) {
+      ensureWiringSelection(app);
+      renderWiringModal(app);
+    }
   };
 
   function renderDetails(snapshot, app) {
@@ -86,6 +127,162 @@
       app.callApi("launch_misc_program", [tool.file]);
     };
     return card;
+  }
+
+  function isWiringModalOpen(app) {
+    var modal = app.byId("wiringModal");
+    return !!(modal && modal.classList.contains("show"));
+  }
+
+  function availableWirings(app) {
+    return (app.state.staticData && app.state.staticData.wiring_files) || [];
+  }
+
+  function currentWiring(app) {
+    var items = availableWirings(app);
+    var index;
+    for (index = 0; index < items.length; index += 1) {
+      if (items[index].file === wiringState.selectedFile) {
+        return items[index];
+      }
+    }
+    return items.length ? items[0] : null;
+  }
+
+  function ensureWiringSelection(app) {
+    var items = availableWirings(app);
+    if (!items.length) {
+      wiringState.selectedFile = "";
+      return;
+    }
+    if (!currentWiring(app)) {
+      wiringState.selectedFile = items[0].file;
+    }
+    if (!wiringState.selectedFile) {
+      wiringState.selectedFile = items[0].file;
+    }
+  }
+
+  function updateZoom(delta, app) {
+    wiringState.zoom = Math.max(0.5, Math.min(3, Number((wiringState.zoom + delta).toFixed(2))));
+    renderWiringPreview(app);
+  }
+
+  function renderWiringModal(app) {
+    renderWiringList(app);
+    renderWiringPreview(app);
+  }
+
+  function renderWiringList(app) {
+    var wrap = app.byId("wiringList");
+    var items = availableWirings(app);
+    var index;
+    app.clearChildren(wrap);
+    if (!items.length) {
+      var empty = document.createElement("div");
+      empty.className = "note-panel";
+      empty.textContent = "Nenhum diagrama foi encontrado na pasta wirings.";
+      wrap.appendChild(empty);
+      return;
+    }
+
+    for (index = 0; index < items.length; index += 1) {
+      wrap.appendChild(buildWiringListItem(items[index], app));
+    }
+  }
+
+  function buildWiringListItem(item, app) {
+    var button = document.createElement("button");
+    var title = document.createElement("strong");
+    var meta = document.createElement("small");
+    button.type = "button";
+    button.className = "wiring-list-item" + (item.file === wiringState.selectedFile ? " active" : "");
+    title.textContent = item.title;
+    meta.textContent = (item.extension || "").replace(".", "").toUpperCase() + (item.preview_available ? " - preview interno" : " - abrir externo");
+    button.appendChild(title);
+    button.appendChild(meta);
+    button.onclick = function () {
+      wiringState.selectedFile = item.file;
+      if (item.preview_type !== "image") {
+        wiringState.zoom = 1;
+      }
+      renderWiringModal(app);
+    };
+    return button;
+  }
+
+  function renderWiringPreview(app) {
+    var wrap = app.byId("wiringPreview");
+    var title = app.byId("wiringPreviewTitle");
+    var external = app.byId("wiringOpenExternal");
+    var zoomIn = app.byId("wiringZoomIn");
+    var zoomOut = app.byId("wiringZoomOut");
+    var zoomReset = app.byId("wiringZoomReset");
+    var selected = currentWiring(app);
+    var shell;
+    var media;
+    var image;
+    var frame;
+
+    app.clearChildren(wrap);
+    if (!selected) {
+      wrap.className = "wiring-preview-empty";
+      wrap.textContent = "Selecione um arquivo na lista para visualizar o diagrama aqui.";
+      title.textContent = "Selecione um diagrama";
+      external.disabled = true;
+      zoomIn.disabled = true;
+      zoomOut.disabled = true;
+      zoomReset.disabled = true;
+      zoomReset.textContent = "100%";
+      return;
+    }
+
+    title.textContent = selected.title;
+    external.disabled = false;
+    zoomReset.textContent = Math.round(wiringState.zoom * 100) + "%";
+    zoomIn.disabled = selected.preview_type !== "image";
+    zoomOut.disabled = selected.preview_type !== "image";
+    zoomReset.disabled = selected.preview_type !== "image";
+
+    if (selected.preview_type === "image") {
+      wrap.className = "wiring-preview-shell";
+      shell = document.createElement("div");
+      shell.className = "wiring-preview-media";
+      shell.style.transform = "scale(" + wiringState.zoom + ")";
+      image = document.createElement("img");
+      image.src = selected.file_uri;
+      image.alt = selected.title;
+      shell.appendChild(image);
+      wrap.appendChild(shell);
+      return;
+    }
+
+    if (selected.preview_type === "pdf") {
+      wrap.className = "wiring-preview-shell";
+      media = document.createElement("div");
+      media.className = "wiring-preview-media";
+      frame = document.createElement("iframe");
+      frame.src = selected.file_uri;
+      frame.title = selected.title;
+      media.appendChild(frame);
+      wrap.appendChild(media);
+      return;
+    }
+
+    wrap.className = "wiring-preview-message";
+    wrap.innerHTML = "";
+    wrap.appendChild(buildUnsupportedMessage(selected));
+  }
+
+  function buildUnsupportedMessage(selected) {
+    var box = document.createElement("div");
+    var title = document.createElement("strong");
+    var text = document.createElement("div");
+    title.textContent = "Sem preview interno para " + ((selected.extension || "").replace(".", "").toUpperCase() || "este formato") + ".";
+    text.textContent = "Use o botao \"Abrir externamente\" para abrir o arquivo no programa padrao do Windows.";
+    box.appendChild(title);
+    box.appendChild(text);
+    return box;
   }
 
   window.BRWheelApp.registerTab("connection", module);

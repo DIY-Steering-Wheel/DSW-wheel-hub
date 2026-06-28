@@ -386,6 +386,52 @@
     </div>
   </div>
 
+  <div class="modal fade" id="wiringModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-xl-down modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <div>
+            <div class="mini-label">Lobby</div>
+            <h5 class="modal-title mb-0">Ligacoes Eletricas</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="wiring-modal-layout">
+            <aside class="wiring-list-panel">
+              <div class="wiring-toolbar">
+                <div>
+                  <div class="card-kicker">Diagramas</div>
+                  <h3 class="wiring-modal-title">Arquivos disponiveis</h3>
+                </div>
+                <button id="wiringOpenExternal" type="button" class="app-btn secondary shell-icon-btn-wide" disabled><i class="bi bi-box-arrow-up-right me-2"></i>Abrir externamente</button>
+              </div>
+              <div id="wiringList" class="wiring-list"></div>
+            </aside>
+
+            <section class="wiring-preview-panel">
+              <div class="wiring-preview-toolbar">
+                <div>
+                  <div class="card-kicker">Preview</div>
+                  <h3 id="wiringPreviewTitle" class="wiring-modal-title">Selecione um diagrama</h3>
+                </div>
+                <div class="compact-actions">
+                  <button id="wiringZoomOut" type="button" class="app-btn secondary shell-icon-btn" title="Diminuir zoom"><i class="bi bi-zoom-out"></i></button>
+                  <button id="wiringZoomReset" type="button" class="app-btn secondary" title="Ajustar zoom">100%</button>
+                  <button id="wiringZoomIn" type="button" class="app-btn secondary shell-icon-btn" title="Aumentar zoom"><i class="bi bi-zoom-in"></i></button>
+                </div>
+              </div>
+              <div id="wiringPreview" class="wiring-preview-empty">Selecione um arquivo na lista para visualizar o diagrama aqui.</div>
+            </section>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="../bootstrap-5.3.0-dist/js/bootstrap.bundle.min.js"></script>
   <script src="../ui/scripts/app-shell.js"></script>
   <script src="../ui/scripts/tabs/connection.js"></script>
