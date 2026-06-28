@@ -1286,3 +1286,189 @@ input[type="range"]::-moz-range-thumb {
     height: auto;
   }
 }
+
+/* === Aba Basico do volante: layout limpo, eixos com ponteiro e botoes === */
+#tab-wheel .wheel-basic-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+#tab-wheel .wheel-config-card,
+#tab-wheel .wheel-monitor-card {
+  min-width: 0;
+}
+
+#tab-wheel .section-headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#tab-wheel .section-headline.compact {
+  margin-bottom: 12px;
+}
+
+#tab-wheel .card-divider {
+  height: 1px;
+  margin: 18px 0;
+  background: linear-gradient(90deg, transparent, rgba(93, 114, 128, 0.18), transparent);
+}
+
+#tab-wheel .wheel-action-stack .app-btn {
+  justify-content: flex-start;
+  width: 100%;
+}
+
+#tab-wheel .wheel-live-panel {
+  display: grid;
+  gap: 14px;
+}
+
+#tab-wheel .wheel-axis-grid {
+  display: grid;
+  gap: 10px;
+}
+
+#tab-wheel .wheel-axis-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(223, 237, 246, 0.5) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+#tab-wheel .wheel-axis-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#tab-wheel .wheel-axis-top span {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#tab-wheel .wheel-axis-top strong {
+  font-size: 13px;
+  color: var(--text);
+}
+
+#tab-wheel .wheel-axis-meter {
+  position: relative;
+  height: 34px;
+}
+
+#tab-wheel .wheel-axis-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 13px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(114, 183, 215, 0.32) 0%, rgba(255, 255, 255, 0.84) 50%, rgba(255, 171, 133, 0.48) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+#tab-wheel .wheel-axis-line::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  width: 2px;
+  height: 22px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(169, 79, 66, 0.32);
+}
+
+#tab-wheel .wheel-axis-pointer {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 15px solid var(--danger);
+  filter: drop-shadow(0 4px 7px rgba(179, 71, 71, 0.28));
+  transition: left 90ms linear;
+}
+
+#tab-wheel .wheel-axis-pointer::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -15px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+#tab-wheel .wheel-button-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+  gap: 8px;
+}
+
+#tab-wheel .wheel-button-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.84) 0%, rgba(223, 237, 246, 0.48) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  transition: background 90ms ease, color 90ms ease, box-shadow 90ms ease, transform 90ms ease;
+}
+
+#tab-wheel .wheel-button-pill.is-pressed {
+  color: #fff;
+  border-color: rgba(179, 71, 71, 0.68);
+  background: linear-gradient(180deg, #d56a64 0%, #b34747 100%);
+  box-shadow: 0 0 14px rgba(179, 71, 71, 0.28);
+  transform: translateY(1px);
+}
+
+#tab-wheel .wheel-empty-state {
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px dashed rgba(93, 114, 128, 0.26);
+  color: var(--muted);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.36);
+}
+
+/* Compatibilidade com render antigo: esconde dados gerais do joystick caso ainda existam no HTML. */
+#tab-wheel .wheel-device-summary,
+#tab-wheel #wheelDeviceStatus,
+#tab-wheel #wheelPressedButtonsCount {
+  display: none !important;
+}
+
+@media (max-width: 1100px) {
+  #tab-wheel .wheel-basic-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  #tab-wheel .wheel-button-status-grid {
+    grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  }
+}

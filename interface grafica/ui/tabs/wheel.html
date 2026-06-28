@@ -1,78 +1,107 @@
 <section id="tab-wheel" class="tab-page">
-  <div class="page-grid two-col">
-    <article class="card">
+  <div class="wheel-basic-layout">
+    <article class="card wheel-config-card">
       <div class="card-head">
         <div class="section-headline">
           <div>
             <div class="card-kicker">Basico do volante</div>
-            <h3>Geometria, encoder e ganho principal</h3>
+            <h3>Configuracoes e acoes</h3>
           </div>
           <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="wheel-basics" title="Ajuda do basico"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
+
       <div class="field-grid two-col">
         <div class="slider-row field-wide">
           <label>Rotacao do volante (graus)</label>
           <input id="wheelRotationDegRange" type="range" min="30" max="2244" step="1">
           <input id="wheelRotationDeg" type="number" min="30" max="2244" step="1">
         </div>
+
         <div class="slider-row field-wide">
           <label>Ganho geral de Force Feedback</label>
           <input id="wheelGeneralGainRange" type="range" min="0" max="200" step="1">
           <input id="wheelGeneralGain" type="number" min="0" max="200" step="1">
         </div>
+
+        <div class="field-wide card-divider"></div>
+
+        <div class="section-headline compact field-wide">
+          <div>
+            <div class="card-kicker">Acoes</div>
+            <h3>Controle rapido</h3>
+          </div>
+          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="wheel-actions" title="Ajuda das acoes"><i class="bi bi-question-lg"></i></button>
+        </div>
+
+        <div class="button-stack wheel-action-stack field-wide">
+          <button id="wheelCenter" class="app-btn secondary"><i class="bi bi-crosshair me-2"></i>Recentralizar volante</button>
+          <button id="wheelCalibrate" class="app-btn secondary"><i class="bi bi-sliders me-2"></i>Recalibrar volante</button>
+          <button id="wheelResetZ" class="app-btn secondary"><i class="bi bi-arrow-counterclockwise me-2"></i>Resetar Z-index</button>
+        </div>
+
+        <div class="field-wide card-divider"></div>
+
+        <div class="section-headline compact field-wide">
+          <div>
+            <div class="card-kicker">Encoder</div>
+            <h3>Sistema CPR/PPR</h3>
+          </div>
+        </div>
+
         <label class="field">
           <span>Encoder CPR</span>
           <input id="wheelEncoderCpr" type="number" min="4" max="600000" step="1">
         </label>
+
         <label class="field">
           <span>Encoder PPR</span>
           <input id="wheelEncoderPpr" type="number" min="1" max="150000" step="1">
         </label>
-        <label id="wheelOutputResolutionBox" class="field">
+
+        <label id="wheelOutputResolutionBox" class="field field-wide">
           <span>Resolucao de saida</span>
           <input id="wheelOutputResolution" type="text" readonly>
         </label>
+
         <div id="wheelOutputResolutionHint" class="note-panel field-wide">Aguardando leitura da firmware.</div>
       </div>
     </article>
 
-    <article class="card">
-      <div class="card-head">
-        <div class="section-headline">
-          <div>
-            <div class="card-kicker">Acoes do volante</div>
-            <h3>Acoes do volante</h3>
-          </div>
-          <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="wheel-actions" title="Ajuda das acoes"><i class="bi bi-question-lg"></i></button>
-        </div>
-      </div>
-      <div class="button-stack">
-        <button id="wheelCenter" class="app-btn secondary">Recentralizar volante</button>
-        <button id="wheelCalibrate" class="app-btn secondary">Recalibrar volante</button>
-        <button id="wheelResetZ" class="app-btn secondary">Resetar Z-index</button>
-      </div>
-    </article>
-
-    <article class="card field-wide">
+    <article class="card wheel-monitor-card">
       <div class="card-head">
         <div class="section-headline">
           <div>
             <div class="card-kicker">Diagnostico do dispositivo</div>
-            <h3>Monitor do joystick no Windows</h3>
+            <h3>Eixos e botoes</h3>
           </div>
           <button type="button" class="app-btn secondary shell-icon-btn help-trigger" data-help-key="wheel-monitor" title="Ajuda do monitor"><i class="bi bi-question-lg"></i></button>
         </div>
       </div>
-      <div class="metric-grid">
-        <div class="metric-box"><span>Estado</span><strong id="wheelDeviceState">-</strong></div>
-        <div class="metric-box"><span>Dispositivo</span><strong id="wheelDeviceName">-</strong></div>
-        <div class="metric-box"><span>VID:PID</span><strong id="wheelDeviceVidPid">-</strong></div>
-        <div class="metric-box"><span>Botoes ativos</span><strong id="wheelDeviceButtons">-</strong></div>
+
+      <div class="wheel-live-panel">
+        <section>
+          <div class="section-headline compact">
+            <div>
+              <div class="card-kicker">Eixos</div>
+              <h3>Posicao atual</h3>
+            </div>
+          </div>
+          <div id="wheelDeviceAxes" class="wheel-axis-grid"></div>
+        </section>
+
+        <div class="card-divider"></div>
+
+        <section>
+          <div class="section-headline compact">
+            <div>
+              <div class="card-kicker">Botoes</div>
+              <h3>Status de cada botao</h3>
+            </div>
+          </div>
+          <div id="wheelDeviceButtonList" class="wheel-button-status-grid"></div>
+        </section>
       </div>
-      <div id="wheelDeviceStatus" class="note-panel mt-3">Aguardando conexao.</div>
-      <div id="wheelDeviceAxes" class="device-axis-grid mt-3"></div>
-      <div id="wheelDeviceButtonList" class="badge-cloud mt-3"></div>
     </article>
   </div>
 </section>
